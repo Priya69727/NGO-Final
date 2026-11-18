@@ -89,6 +89,10 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
       setFormError('Role title is required.');
       return;
     }
+    if (!form.description.trim()) {
+      setFormError('Job description is required.');
+      return;
+    }
     const openingsNum = parseInt(form.openings, 10);
     if (isNaN(openingsNum) || openingsNum <= 0) {
       setFormError('Number of openings must be at least 1.');
@@ -154,6 +158,14 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
     setEditError('');
     if (!editForm.title.trim()) {
       setEditError('Role title is required.');
+      return;
+    }
+    if (!editForm.description.trim()) {
+      setEditError('Job description is required.');
+      return;
+    }
+    if (editForm.closesOn && editForm.openedOn && editForm.closesOn < editForm.openedOn) {
+      setEditError('Closing date cannot be earlier than the opening date.');
       return;
     }
     const openingsNum = parseInt(editForm.openings, 10);
@@ -429,6 +441,7 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
           label="Job Description"
           value={form.description}
           onChange={v => setForm(f => ({ ...f, description: v }))}
+          required
         />
       </Modal>
 
@@ -507,6 +520,7 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
           label="Job Description"
           value={editForm.description || ''}
           onChange={v => setEditForm((f: any) => ({ ...f, description: v }))}
+          required
         />
       </Modal>
 

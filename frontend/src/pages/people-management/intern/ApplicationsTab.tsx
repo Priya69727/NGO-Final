@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Eye, CheckCircle2, AlertCircle, RefreshCw, Download, Upload, UserCheck, XCircle, ArrowRight } from 'lucide-react';
-import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
+import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, PhoneField, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
 import { peopleApi, type InternApplication, type Department, type StaffProfile } from '../../../services/peopleApi';
 
 interface Props {
@@ -97,8 +97,8 @@ export default function ApplicationsTab({ departments, mentors, onRefreshStats, 
   };
 
   const handleCreateApplication = async () => {
-    if (!form.fullName.trim() || !form.email.trim()) {
-      setFormError('Full name and email are required.');
+    if (!form.fullName.trim() || !form.email.trim() || !form.areaOfInterest.trim()) {
+      setFormError('Full name, email, and area of interest are required.');
       return;
     }
     setSaving(true);
@@ -383,11 +383,10 @@ export default function ApplicationsTab({ departments, mentors, onRefreshStats, 
           placeholder="priya@example.com"
           required
         />
-        <TextField
+        <PhoneField
           label="Phone Number"
           value={form.phone}
           onChange={v => setForm({ ...form, phone: v })}
-          placeholder="+91 98765 43210"
         />
         <TextField
           label="College / University"
@@ -412,6 +411,7 @@ export default function ApplicationsTab({ departments, mentors, onRefreshStats, 
           value={form.areaOfInterest}
           onChange={v => setForm({ ...form, areaOfInterest: v })}
           placeholder="e.g. Digital Marketing, Field Work, Coding"
+          required
         />
         <SelectField
           label="Preferred Department"

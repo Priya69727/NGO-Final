@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Eye, Edit3, CheckCircle2, AlertCircle, RefreshCw, DollarSign, Calendar, Award } from 'lucide-react';
-import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, SectionTitle, SelectField, StatusBadge, SubTabs, TextField, ACCENT, type Column } from '../../../components/people';
+import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, PhoneField, SectionTitle, SelectField, StatusBadge, SubTabs, TextField, ACCENT, type Column } from '../../../components/people';
 import { peopleApi, type StaffProfile, type Department, type StaffLeaveApplication, type StaffPerformanceReview, type StaffPayrollRecord } from '../../../services/peopleApi';
 
 interface Props {
@@ -403,14 +403,14 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
           </div>
         )}
         <TextField
-          label="Full Name *"
+          label="Full Name"
           value={form.fullName}
           onChange={v => setForm(f => ({ ...f, fullName: v }))}
           required
           wide
         />
         <TextField
-          label="Designation / Role *"
+          label="Designation / Role"
           value={form.jobTitle}
           onChange={v => setForm(f => ({ ...f, jobTitle: v }))}
           placeholder="e.g. Program Coordinator"
@@ -428,7 +428,7 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
           value={form.email}
           onChange={v => setForm(f => ({ ...f, email: v }))}
         />
-        <TextField
+        <PhoneField
           label="Phone Number"
           value={form.phone}
           onChange={v => setForm(f => ({ ...f, phone: v }))}
@@ -511,14 +511,14 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
           </div>
         )}
         <TextField
-          label="Full Name *"
+          label="Full Name"
           value={editForm.fullName || ''}
           onChange={v => setEditForm((f: any) => ({ ...f, fullName: v }))}
           required
           wide
         />
         <TextField
-          label="Designation / Role *"
+          label="Designation / Role"
           value={editForm.jobTitle || ''}
           onChange={v => setEditForm((f: any) => ({ ...f, jobTitle: v }))}
           required
@@ -535,7 +535,7 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
           value={editForm.email || ''}
           onChange={v => setEditForm((f: any) => ({ ...f, email: v }))}
         />
-        <TextField
+        <PhoneField
           label="Phone Number"
           value={editForm.phone || ''}
           onChange={v => setEditForm((f: any) => ({ ...f, phone: v }))}

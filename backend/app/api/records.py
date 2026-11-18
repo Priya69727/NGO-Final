@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from sqlalchemy import MetaData, Table, and_, func, insert, or_, select, update, delete
 from sqlalchemy.exc import DataError, IntegrityError, NoSuchTableError, StatementError
 from sqlalchemy.sql.sqltypes import JSON, Date, DateTime, Numeric, String
+import phonenumbers
 
 from app.dependencies import CurrentUser, DbSession
 
@@ -222,13 +223,39 @@ def _values(table: Table, payload: dict[str, Any], *, inserting: bool) -> dict[s
 
 def _validate_people_values(db, resource: str, table: Table, values: dict[str, Any], record_id: str | None = None) -> None:
     effective_values = dict(values)
-    if record_id is not None and resource == "staff-leave-applications":
+    if record_id is not None:
         key = next(iter(table.primary_key.columns))
         existing = db.execute(
             select(table).where(key == _convert_value(key, record_id))
         ).mappings().first()
         if existing:
             effective_values = {**dict(existing), **values}
+
+    required_fields = {
+        "staff": ("full_name", "employee_code", "job_title"),
+        "hr-requirements": ("title", "description"),
+        "hr-applicants": ("full_name", "email"),
+        "intern-applications": ("full_name", "email", "area_of_interest"),
+        "intern-profiles": ("application_id", "intern_code"),
+        "intern-tasks": ("intern_id", "title", "description"),
+        "volunteers": ("full_name",),
+        "volunteer-applications": ("full_name", "email"),
+        "volunteer-assignments": ("volunteer_id", "role_title"),
+        "staff-attendance": ("staff_id", "attendance_date", "status"),
+        "intern-attendance": ("intern_id", "attendance_date", "status"),
+        "volunteer-attendance": ("volunteer_id", "attendance_date", "status"),
+        "staff-leave-applications": ("staff_id", "leave_type", "starts_on", "ends_on", "reason"),
+    }
+    for field in required_fields.get(resource, ()):
+        value = effective_values.get(field)
+        if value is None or (isinstance(value, str) and not value.strip()):
+            raise HTTPException(
+                status_code=422,
+                detail=f"{_camel_case(field)} is required and cannot contain only whitespace.",
+            )
+        if isinstance(value, str):
+            effective_values[field] = value.strip()
+            values[field] = value.strip()
 
     email = values.get("email")
     if email is not None:
@@ -249,6 +276,21 @@ def _validate_people_values(db, resource: str, table: Table, values: dict[str, A
             if db.scalar(select(table.c.id).where(*conditions).limit(1)) is not None:
                 raise HTTPException(status_code=409, detail="A record with this email address already exists.")
 
+    phone = values.get("phone")
+    if phone is not None and phone.strip():
+        normalized_phone = phone.strip()
+        if re.search(r"[A-Za-z]", normalized_phone) or re.search(r"[^0-9+().\-\s]", normalized_phone):
+            raise HTTPException(status_code=422, detail="Enter a valid international phone number.")
+        try:
+            parsed_phone = phonenumbers.parse(normalized_phone, None if normalized_phone.startswith("+") else "IN")
+        except phonenumbers.NumberParseException as error:
+            raise HTTPException(status_code=422, detail="Enter a valid international phone number.") from error
+        if not phonenumbers.is_valid_number(parsed_phone):
+            raise HTTPException(status_code=422, detail="Enter a valid phone number for the selected country.")
+        if parsed_phone.country_code == 91 and len(str(parsed_phone.national_number)) != 10:
+            raise HTTPException(status_code=422, detail="Indian phone numbers must contain exactly 10 digits.")
+        values["phone"] = phonenumbers.format_number(parsed_phone, phonenumbers.PhoneNumberFormat.E164)
+
     attendance_keys = {
         "staff-attendance": ("staff_id", "staffId"),
         "intern-attendance": ("intern_id", "internId"),
@@ -258,6 +300,8 @@ def _validate_people_values(db, resource: str, table: Table, values: dict[str, A
         member_column, member_field = attendance_keys[resource]
         member_id = values.get(member_column)
         attendance_date = values.get("attendance_date")
+        if attendance_date is not None and attendance_date > date.today():
+            raise HTTPException(status_code=422, detail="Attendance cannot be recorded for a future date.")
         if member_id is not None and attendance_date is not None:
             conditions = [
                 table.c[member_column] == member_id,
@@ -273,6 +317,22 @@ def _validate_people_values(db, resource: str, table: Table, values: dict[str, A
                 conditions.append(key != _convert_value(key, record_id))
             if db.scalar(select(table.c.id).where(*conditions).limit(1)) is not None:
                 raise HTTPException(status_code=409, detail=f"Attendance for this {member_field} and date already exists.")
+
+    if resource == "hr-requirements":
+        opened_on = effective_values.get("opened_on")
+        closes_on = effective_values.get("closes_on")
+        if opened_on and closes_on and closes_on < opened_on:
+            raise HTTPException(status_code=422, detail="Closing date cannot be earlier than the opening date.")
+    if resource == "intern-profiles":
+        starts_on = effective_values.get("starts_on")
+        ends_on = effective_values.get("ends_on")
+        if starts_on and ends_on and ends_on < starts_on:
+            raise HTTPException(status_code=422, detail="Internship end date cannot be earlier than its start date.")
+    if resource == "volunteer-assignments":
+        starts_on = effective_values.get("starts_on")
+        ends_on = effective_values.get("ends_on")
+        if starts_on and ends_on and ends_on < starts_on:
+            raise HTTPException(status_code=422, detail="Assignment end date cannot be earlier than its start date.")
 
     if resource == "staff-leave-applications":
         staff_id = effective_values.get("staff_id")

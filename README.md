@@ -51,7 +51,7 @@ Authentication is backed by the FastAPI service and PostgreSQL. Follow [backend/
 - Core operations: dashboard, projects, proposals, planning, events, beneficiaries, resources, occasions, engagement, outcomes, communications, reports, and administration.
 - Birthday Project: `/birthday-project/dashboard`, `/profiles`, `/occasions`, `/engagement`, `/outcomes`, `/departments`, `/reports`, and `/action-workspace`.
 - Donor Management: `/donor-management/admin/dashboard`, `/directory`, `/contributions`, `/campaigns`, `/communications`, `/followup`, and `/reports`.
-- People Management: `/people-management`, `/people-management/hr`, `/people-management/interns`, and `/people-management/volunteers`.
+- People Management: `/people-management`, `/people-management/hr`, `/people-management/interns`, and `/people-management/volunteers`. HR manages shared tasks and public Job/Internship/Volunteer opportunities; volunteers can see only their assigned tasks and update status at `/people-management/tasks`. `/people-management/calendar` and `/people-management/attendance` provide the shared schedule and attendance workspaces. Published opportunities are publicly viewable at `/opportunities/:slug` and applications are saved to the corresponding HR, intern, or volunteer application records. Apply migration `0006_people_workspace` with `alembic upgrade head` before using these features.
 
 Project management routes include `/projects`, `/projects/create`, `/projects/planning`, `/projects/proposals`, `/projects/reports`, and `/projects/:id`.
 

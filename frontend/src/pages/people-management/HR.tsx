@@ -10,6 +10,7 @@ import AttendanceTab from './hr/AttendanceTab';
 import PerformanceTab from './hr/PerformanceTab';
 import PayrollTab from './hr/PayrollTab';
 import ReportsTab from './hr/ReportsTab';
+import OpportunitiesTab from './hr/OpportunitiesTab';
 import { peopleApi, type Department, type StaffProfile, type HrRequirement } from '../../services/peopleApi';
 
 const TABS = [
@@ -22,6 +23,7 @@ const TABS = [
   { id: 'performance', label: 'Performance' },
   { id: 'payroll', label: 'Payroll & Finance' },
   { id: 'reports', label: 'Reports & Exports' },
+  { id: 'opportunities', label: 'Opportunities' },
 ];
 
 export default function HRPage() {
@@ -156,6 +158,7 @@ export default function HRPage() {
       {tab === 'reports' && (
         <ReportsTab departments={departments} employees={employees} requirements={requirements} />
       )}
+      {tab === 'opportunities' && <OpportunitiesTab departments={departments} />}
     </div>
   );
 }

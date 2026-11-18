@@ -8,4 +8,5 @@ export { default as Modal } from './Modal';
 export { default as StatusBadge } from './StatusBadge';
 export { default as EmptyState } from './EmptyState';
 export { TextField, SelectField, TextAreaField } from './FormFields';
+export { default as PhoneField } from './PhoneField';
 export * from './ui';

@@ -1,4 +1,7 @@
 import io
+from datetime import date, timedelta
+from uuid import uuid4
+
 import pytest
 from sqlalchemy import text
 
@@ -70,6 +73,7 @@ def _install_people_test_tables(db_session_factory):
             interview_notes TEXT NOT NULL DEFAULT '',
             rating NUMERIC,
             notes TEXT NOT NULL DEFAULT '',
+            opportunity_id TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
@@ -146,6 +150,7 @@ def _install_people_test_tables(db_session_factory):
             preferred_department_id TEXT,
             duration_weeks INTEGER DEFAULT 8,
             reviewer_remarks TEXT DEFAULT '',
+            opportunity_id TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
@@ -162,6 +167,7 @@ def _install_people_test_tables(db_session_factory):
             attendance_percent NUMERIC NOT NULL DEFAULT 0,
             final_feedback TEXT NOT NULL DEFAULT '',
             certificate_status TEXT NOT NULL DEFAULT 'Pending',
+            user_id TEXT,
             full_name TEXT DEFAULT '',
             email TEXT DEFAULT '',
             phone TEXT DEFAULT '',
@@ -169,6 +175,26 @@ def _install_people_test_tables(db_session_factory):
             department_id TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""",
+        """CREATE TABLE IF NOT EXISTS intern_tasks (
+            id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+            intern_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            project_name TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'Not Started',
+            due_date TEXT,
+            priority TEXT NOT NULL DEFAULT 'Medium',
+            description TEXT NOT NULL DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""",
+        """CREATE TABLE IF NOT EXISTS intern_attendance (
+            id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+            intern_id TEXT NOT NULL,
+            attendance_date TEXT NOT NULL,
+            status TEXT NOT NULL,
+            note TEXT NOT NULL DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
         """CREATE TABLE IF NOT EXISTS intern_application_history (
             id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
@@ -186,6 +212,7 @@ def _install_people_test_tables(db_session_factory):
             motivation TEXT NOT NULL DEFAULT '',
             status TEXT NOT NULL DEFAULT 'New',
             applied_on TEXT DEFAULT CURRENT_TIMESTAMP,
+            opportunity_id TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
@@ -236,6 +263,64 @@ def _install_people_test_tables(db_session_factory):
             entity_type TEXT NOT NULL,
             entity_id TEXT NOT NULL,
             changes JSON NOT NULL DEFAULT '{}',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""",
+        """CREATE TABLE IF NOT EXISTS projects (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL
+        )""",
+        """CREATE TABLE IF NOT EXISTS events (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            project_id TEXT,
+            starts_at TEXT NOT NULL,
+            ends_at TEXT,
+            event_type TEXT NOT NULL DEFAULT 'Meeting',
+            organizer TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'Scheduled'
+        )""",
+        """CREATE TABLE IF NOT EXISTS people_opportunities (
+            id TEXT PRIMARY KEY,
+            slug TEXT NOT NULL UNIQUE,
+            opportunity_type TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            requirements TEXT NOT NULL DEFAULT '',
+            department_id TEXT,
+            location TEXT NOT NULL DEFAULT '',
+            employment_type TEXT NOT NULL DEFAULT '',
+            closes_on TEXT,
+            status TEXT NOT NULL DEFAULT 'Draft',
+            created_by TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            published_at TEXT
+        )""",
+        """CREATE TABLE IF NOT EXISTS people_tasks (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            assigned_by TEXT,
+            staff_id TEXT,
+            intern_id TEXT,
+            volunteer_id TEXT,
+            starts_on TEXT NOT NULL,
+            due_date TEXT NOT NULL,
+            priority TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Not Started',
+            department_id TEXT,
+            project_id TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )""",
+        """CREATE TABLE IF NOT EXISTS people_task_history (
+            id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+            task_id TEXT NOT NULL,
+            actor_id TEXT,
+            field_name TEXT NOT NULL,
+            old_value TEXT,
+            new_value TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
         """INSERT INTO departments (id, name) VALUES ('hr', 'Human Resources')""",
@@ -419,3 +504,160 @@ def test_intern_and_volunteer_workflows(client, db_session_factory):
     assert vol_dash.status_code == 200
     assert vol_dash.json()["totalVolunteers"] == 1
     assert vol_dash.json()["approvedApplications"] == 1
+
+
+def test_shared_people_tasks_calendar_and_public_opportunities(client, db_session_factory):
+    _install_people_test_tables(db_session_factory)
+    _login_admin(client, db_session_factory)
+    with db_session_factory() as db:
+        admin = db.query(User).filter_by(email="admin@ngo.org").one()
+        staff_id = str(uuid4())
+        db.execute(
+            text(
+                """
+                INSERT INTO staff_profiles (id, user_id, employee_code, job_title, department_id, status, full_name, email)
+                VALUES (:id, :user_id, 'EMP-TEST', 'Coordinator', 'hr', 'Active', 'Staff Member', 'staff@example.org')
+                """
+            ),
+            {"id": staff_id, "user_id": str(admin.id)},
+        )
+        db.commit()
+
+    start = date.today().isoformat()
+    due = (date.today() + timedelta(days=3)).isoformat()
+    created = client.post(
+        "/api/people/tasks",
+        json={
+            "title": "Prepare field report",
+            "description": "Compile the monthly outreach results.",
+            "assigneeType": "Employee",
+            "assigneeId": staff_id,
+            "startDate": start,
+            "dueDate": due,
+            "priority": "High",
+            "status": "Not Started",
+            "departmentId": "hr",
+        },
+    )
+    assert created.status_code == 201, created.text
+    task = created.json()
+    assert task["assigneeName"] == "Staff Member"
+    assert task["assignedByName"] == "Admin Staff"
+    assert task["status"] == "Not Started"
+
+    other_staff_id = str(uuid4())
+    with db_session_factory() as db:
+        db.execute(
+            text(
+                """
+                INSERT INTO staff_profiles (id, employee_code, job_title, status, full_name, email)
+                VALUES (:id, 'EMP-OTHER', 'Coordinator', 'Active', 'Other Staff', 'other@example.org')
+                """
+            ),
+            {"id": other_staff_id},
+        )
+        db.commit()
+    other_task_response = client.post(
+        "/api/people/tasks",
+        json={
+            "title": "Other person's task",
+            "description": "This task belongs to another staff member.",
+            "assigneeType": "Employee",
+            "assigneeId": other_staff_id,
+            "startDate": start,
+            "dueDate": due,
+            "priority": "Low",
+            "status": "Not Started",
+        },
+    )
+    assert other_task_response.status_code == 201, other_task_response.text
+    other_task = other_task_response.json()
+
+    invalid_task = client.post(
+        "/api/people/tasks",
+        json={
+            "title": "   ",
+            "description": "A task",
+            "assigneeType": "Employee",
+            "assigneeId": staff_id,
+            "startDate": due,
+            "dueDate": start,
+            "priority": "Low",
+            "status": "Not Started",
+        },
+    )
+    assert invalid_task.status_code == 422
+
+    updated = client.patch(f"/api/people/tasks/{task['id']}", json={"status": "In Progress"})
+    assert updated.status_code == 200
+    with db_session_factory() as db:
+        admin = db.query(User).filter_by(email="admin@ngo.org").one()
+        admin.role = "Volunteer"
+        db.commit()
+    own_tasks = client.get("/api/people/tasks")
+    assert own_tasks.status_code == 200
+    assert [item["id"] for item in own_tasks.json()["items"]] == [task["id"]]
+    participant_update = client.patch(f"/api/people/tasks/{task['id']}", json={"status": "Completed"})
+    assert participant_update.status_code == 200
+    forbidden_other_update = client.patch(f"/api/people/tasks/{other_task['id']}", json={"status": "Completed"})
+    assert forbidden_other_update.status_code == 403
+    forbidden_edit = client.patch(f"/api/people/tasks/{task['id']}", json={"title": "Changed by participant"})
+    assert forbidden_edit.status_code == 403
+    with db_session_factory() as db:
+        admin = db.query(User).filter_by(email="admin@ngo.org").one()
+        admin.role = "Admin"
+        db.commit()
+    history = client.get(f"/api/people/tasks/{task['id']}/history")
+    assert history.status_code == 200
+    assert any(item["fieldName"] == "status" for item in history.json()["items"])
+
+    calendar = client.get(f"/api/people/calendar?dateFrom={start}&dateTo={due}")
+    assert calendar.status_code == 200
+    assert any(item["id"] == f"task:{task['id']}" for item in calendar.json()["items"])
+
+    opportunity_response = client.post(
+        "/api/people/opportunities",
+        json={
+            "opportunityType": "Volunteer",
+            "title": "Weekend Reading Volunteer",
+            "description": "Support reading sessions for local children.",
+            "requirements": "Available on weekends.",
+            "location": "Pune",
+            "closesOn": due,
+            "status": "Published",
+        },
+    )
+    assert opportunity_response.status_code == 201, opportunity_response.text
+    opportunity = opportunity_response.json()
+    public = client.get(f"/api/public/opportunities/{opportunity['slug']}")
+    assert public.status_code == 200
+    assert public.json()["title"] == "Weekend Reading Volunteer"
+    assert "createdBy" not in public.json()
+
+    invalid_phone = client.post(
+        f"/api/public/opportunities/{opportunity['slug']}/applications",
+        json={"fullName": "Ravi Test", "email": "ravi@example.org", "phone": "+9198765"},
+    )
+    assert invalid_phone.status_code == 422
+
+    application = client.post(
+        f"/api/public/opportunities/{opportunity['slug']}/applications",
+        json={
+            "fullName": "Ravi Test",
+            "email": "ravi@example.org",
+            "phone": "+919876543210",
+            "message": "I can help on weekends.",
+        },
+    )
+    assert application.status_code == 201, application.text
+    assert application.json()["applicationId"]
+    with db_session_factory() as db:
+        saved = db.execute(
+            text("SELECT opportunity_id, phone FROM volunteer_applications WHERE email = 'ravi@example.org'")
+        ).one()
+        assert saved.phone == "+919876543210"
+        assert saved.opportunity_id == opportunity["id"]
+
+    closed = client.patch(f"/api/people/opportunities/{opportunity['id']}", json={"status": "Closed"})
+    assert closed.status_code == 200
+    assert client.get(f"/api/public/opportunities/{opportunity['slug']}").status_code == 410

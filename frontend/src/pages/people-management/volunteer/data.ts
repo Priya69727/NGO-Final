@@ -13,7 +13,7 @@ export interface Volunteer {
 }
 export interface VApplication { id: string; name: string; email: string; skills: string[]; motivation: string; appliedOn: string; status: AppStatus }
 export interface Assignment { id: string; volunteerId: string; kind: 'Project' | 'Event'; target: string; role: string; date: string; status: 'Upcoming' | 'Ongoing' | 'Completed' | 'Cancelled'; responsibilities: string }
-export interface AttendanceRec { id: string; volunteerId: string; date: string; kind: 'Event' | 'Project'; target: string; status: 'Present' | 'Absent' | 'Late'; hours: number }
+export interface AttendanceRec { id: string; volunteerId: string; date: string; kind: 'Event' | 'Project'; target: string; status: 'Present' | 'Absent' | 'Half Day' | 'Late' | 'Leave' | 'Holiday'; hours: number }
 export interface Recognition { id: string; volunteerId: string; title: string; kind: 'Certificate' | 'Award' | 'Recognition'; date: string }
 
 const av = (...p: string[]) => p;

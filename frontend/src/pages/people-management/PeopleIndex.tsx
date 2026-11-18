@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Briefcase, GraduationCap, UserCheck, ArrowRight, type LucideIcon } from 'lucide-react';
+import { Briefcase, CalendarDays, ClipboardList, GraduationCap, UserCheck, ArrowRight, type LucideIcon } from 'lucide-react';
 import { PageHeader, ACCENT } from '../../components/people';
 
 const MODULES: { to: string; title: string; desc: string; color: string; Icon: LucideIcon; tabs: string[] }[] = [
@@ -32,6 +32,22 @@ export default function PeopleIndex() {
             </span>
           </Link>))}
       </div>
+      <section>
+        <div className="mb-3"><h2 className="text-lg font-extrabold text-slate-800">Shared workforce tools</h2><p className="mt-1 text-sm text-slate-500">See schedules and responsibilities across all People teams.</p></div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {[
+            { to: '/people-management/calendar', title: 'People calendar', detail: 'Tasks, deadlines, attendance, interviews, and events.', Icon: CalendarDays },
+            { to: '/people-management/tasks', title: 'Task tracking', detail: 'Assign and follow work across the organization.', Icon: ClipboardList },
+            { to: '/people-management/attendance', title: 'Attendance overview', detail: 'Review records and identify missing entries.', Icon: UserCheck },
+          ].map(({ to, title, detail, Icon }) => (
+            <Link key={to} to={to} className="card group flex items-start gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+              <span className="rounded-lg bg-teal-50 p-2.5 text-teal-800"><Icon size={18} /></span>
+              <span className="min-w-0 flex-1"><span className="block font-bold text-slate-800">{title}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{detail}</span></span>
+              <ArrowRight size={15} className="mt-1 text-slate-400 transition-transform group-hover:translate-x-1" />
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -123,7 +123,7 @@ export interface StaffAttendanceRecord {
   attendanceDate: string;
   checkIn?: string | null;
   checkOut?: string | null;
-  status: 'Present' | 'Absent' | 'Late' | 'Leave' | 'Holiday';
+  status: 'Present' | 'Absent' | 'Half Day' | 'Late' | 'Leave' | 'Holiday';
   notes?: string;
   createdAt?: string;
 }
@@ -239,7 +239,7 @@ export interface InternAttendanceRecord {
   id: string;
   internId: string;
   attendanceDate: string;
-  status: 'Present' | 'Late' | 'Absent';
+  status: 'Present' | 'Absent' | 'Half Day' | 'Late' | 'Leave' | 'Holiday';
   note?: string;
   createdAt?: string;
 }
@@ -314,7 +314,7 @@ export interface VolunteerAttendanceRecord {
   volunteerId: string;
   assignmentId?: string | null;
   attendanceDate: string;
-  status: 'Present' | 'Absent' | 'Late';
+  status: 'Present' | 'Absent' | 'Half Day' | 'Late' | 'Leave' | 'Holiday';
   hours: number;
   assignmentKind?: 'Project' | 'Event' | 'Activity';
   targetLabel?: string;
@@ -342,9 +342,78 @@ export interface VolunteerRecognition {
   createdAt?: string;
 }
 
+export type PeopleAssigneeType = 'Employee' | 'Intern' | 'Volunteer';
+export type PeopleTaskStatus = 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Overdue';
+export type PeopleTaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+
+export interface PeopleTask {
+  id: string;
+  title: string;
+  description: string;
+  assignedBy?: string | null;
+  assignedByName?: string | null;
+  staffId?: string | null;
+  internId?: string | null;
+  volunteerId?: string | null;
+  assigneeName?: string | null;
+  assigneeEmail?: string | null;
+  startsOn: string;
+  dueDate: string;
+  priority: PeopleTaskPriority;
+  status: PeopleTaskStatus;
+  departmentId?: string | null;
+  departmentName?: string | null;
+  projectId?: string | null;
+  projectName?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PeopleOpportunity {
+  id: string;
+  slug: string;
+  opportunityType: 'Job' | 'Internship' | 'Volunteer';
+  title: string;
+  description: string;
+  requirements: string;
+  departmentId?: string | null;
+  location: string;
+  employmentType: string;
+  closesOn?: string | null;
+  status: 'Draft' | 'Published' | 'Closed' | 'Expired';
+  createdAt?: string;
+}
+
+export interface PeopleCalendarEvent {
+  id: string;
+  eventType: string;
+  title: string;
+  assignedPerson?: string | null;
+  assignedBy?: string | null;
+  personId?: string | null;
+  personType?: string | null;
+  startDate: string;
+  dueDate?: string | null;
+  status: string;
+  priority?: string | null;
+  departmentId?: string | null;
+  departmentName?: string | null;
+  relatedProject?: string | null;
+  description?: string;
+  link?: string;
+}
+
 // -------------------------------------------------------------
 // API Calls
 // -------------------------------------------------------------
+
+function queryString(params: Record<string, string | number | undefined>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') query.set(key, String(value));
+  }
+  return query.size ? `?${query.toString()}` : '';
+}
 
 export const peopleApi = {
   // Dashboards
@@ -455,6 +524,35 @@ export const peopleApi = {
   createVolunteerFeedback: (data: Partial<VolunteerFeedbackRecord>) => apiCreate<VolunteerFeedbackRecord>('volunteer-feedback', data),
   getVolunteerRecognitions: (params: Record<string, any> = {}) => apiList<VolunteerRecognition>('volunteer-recognitions', { limit: 200, ...params }),
   createVolunteerRecognition: (data: Partial<VolunteerRecognition>) => apiCreate<VolunteerRecognition>('volunteer-recognitions', data),
+
+  // Shared People workspace
+  getPeopleTasks: (params: Record<string, string | number | undefined> = {}) =>
+    apiRequest<{ items: PeopleTask[]; total: number }>(`/people/tasks${queryString(params)}`),
+  createPeopleTask: (data: {
+    title: string; description: string; assigneeType: PeopleAssigneeType; assigneeId: string;
+    startDate: string; dueDate: string; priority: PeopleTaskPriority; status: Exclude<PeopleTaskStatus, 'Overdue'>;
+    departmentId?: string; projectId?: string;
+  }) => apiRequest<PeopleTask>('/people/tasks', { method: 'POST', body: JSON.stringify(data) }),
+  updatePeopleTask: (id: string, data: Partial<{
+    title: string; description: string; assigneeType: PeopleAssigneeType; assigneeId: string;
+    startDate: string; dueDate: string; priority: PeopleTaskPriority; status: Exclude<PeopleTaskStatus, 'Overdue'>;
+    departmentId: string | null; projectId: string | null;
+  }>) => apiRequest<PeopleTask>(`/people/tasks/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getPeopleTaskHistory: (id: string) => apiRequest<{ items: Array<Record<string, string | null>> }>(`/people/tasks/${encodeURIComponent(id)}/history`),
+  getPeopleCalendar: (params: Record<string, string | undefined> = {}) =>
+    apiRequest<{ items: PeopleCalendarEvent[]; total: number }>(`/people/calendar${queryString(params)}`),
+  getPeopleOpportunities: () => apiRequest<{ items: PeopleOpportunity[]; total: number }>('/people/opportunities'),
+  createPeopleOpportunity: (data: Omit<PeopleOpportunity, 'id' | 'slug' | 'createdAt'>) =>
+    apiRequest<PeopleOpportunity>('/people/opportunities', { method: 'POST', body: JSON.stringify(data) }),
+  updatePeopleOpportunity: (id: string, data: Partial<Omit<PeopleOpportunity, 'id' | 'slug' | 'createdAt'>>) =>
+    apiRequest<PeopleOpportunity>(`/people/opportunities/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getPublicOpportunity: (slug: string) => apiRequest<Omit<PeopleOpportunity, 'id' | 'status'>>(`/public/opportunities/${encodeURIComponent(slug)}`),
+  applyToPublicOpportunity: (slug: string, data: {
+    fullName: string; email: string; phone: string; message?: string; college?: string; degree?: string;
+    skills?: string[]; experienceYears?: number;
+  }) => apiRequest<{ message: string; applicationId: string }>(`/public/opportunities/${encodeURIComponent(slug)}/applications`, {
+    method: 'POST', body: JSON.stringify(data),
+  }),
 
   // Uploads
   uploadFile: async (file: File) => {

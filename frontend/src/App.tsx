@@ -169,6 +169,12 @@ const PMInternsPage = lazy(() => import("./pages/people-management/Interns"))
 const PMVolunteersPage = lazy(
   () => import("./pages/people-management/Volunteers"),
 )
+const PeopleWorkspacePage = lazy(
+  () => import("./pages/people-management/PeopleWorkspace"),
+)
+const PublicOpportunityPage = lazy(
+  () => import("./pages/PublicOpportunity"),
+)
 
 export default function App() {
   return (
@@ -187,6 +193,7 @@ export default function App() {
             }
           >
             <Routes>
+              <Route path="/opportunities/:slug" element={<PublicOpportunityPage />} />
               <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
               <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
               <Route path="/access-pending" element={<MemberRoute><AccessPendingPage /></MemberRoute>} />
@@ -310,6 +317,18 @@ export default function App() {
                       <PMVolunteersPage />
                     </div>
                   }
+                />
+                <Route
+                  path="people-management/calendar"
+                  element={<div className="people-module"><PeopleWorkspacePage /></div>}
+                />
+                <Route
+                  path="people-management/tasks"
+                  element={<div className="people-module"><PeopleWorkspacePage /></div>}
+                />
+                <Route
+                  path="people-management/attendance"
+                  element={<div className="people-module"><PeopleWorkspacePage /></div>}
                 />
                 <Route path="*" element={<IndexRedirect />} />
               </Route>

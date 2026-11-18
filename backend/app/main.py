@@ -19,6 +19,8 @@ from app.api.donors import router as donors_router
 from app.api.dashboard import router as dashboard_router
 from app.api.events import router as events_router
 from app.api.people import router as people_router
+from app.api.people_workspace import router as people_workspace_router
+from app.api.community import router as community_router
 from app.api.portal import router as portal_router
 from app.api.projects import router as projects_router
 from app.api.proposals import router as proposals_router
@@ -82,6 +84,8 @@ app.include_router(beneficiaries_router)
 app.include_router(donors_router)
 app.include_router(events_router)
 app.include_router(people_router)
+app.include_router(people_workspace_router)
 app.include_router(communications_router)
 app.include_router(reports_router)
 app.include_router(portal_router)
+app.include_router(community_router)

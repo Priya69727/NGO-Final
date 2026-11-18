@@ -14,7 +14,7 @@ from sqlalchemy import text
 from app.dependencies import CurrentUser, DbSession
 
 router = APIRouter(prefix="/api/portal", tags=["volunteer portal"])
-PORTAL_ROLES = {"Member", "Volunteer", "Admin", "Project Manager", "Staff"}
+PORTAL_ROLES = {"Member", "Volunteer"}
 OPEN_APPLICATION = ("New", "Applied", "Under Review", "Approved")
 DISPLAY_STATUS = {"New": "Pending", "Applied": "Pending", "Under Review": "Under review", "Approved": "Approved", "Rejected": "Rejected"}
 
@@ -61,6 +61,7 @@ def _profile_json(p, user) -> dict:
     return {
         "id": str(p["id"]), "fullName": p["full_name"], "email": p["email"] or user.email, "phone": p["phone"] or "",
         "location": p.get("city") or "", "about": p.get("about") or "", "skills": list(p["skills"] or []),
+        "communityVisible": bool(p.get("community_visible", True)),
         "unavailableDays": list(p.get("unavailable_days") or []), "status": p["status"], "joinedOn": _iso(p["joined_on"]), "role": user.role,
     }
 
@@ -108,6 +109,7 @@ class ProfileUpdate(BaseModel):
     about: str | None = Field(default=None, max_length=1000)
     skills: list[str] | None = None
     unavailable_days: list[str] | None = Field(default=None, alias="unavailableDays")
+    community_visible: bool | None = Field(default=None, alias="communityVisible")
     model_config = {"populate_by_name": True}
 
 
@@ -119,7 +121,7 @@ def update_me(body: ProfileUpdate, user: CurrentUser, db: DbSession):
         raise HTTPException(404, "No volunteer profile for this account.")
     columns = {"full_name": body.full_name, "phone": body.phone, "city": body.location, "about": body.about,
                "skills": [s.strip() for s in body.skills if s.strip()][:40] if body.skills is not None else None,
-               "unavailable_days": body.unavailable_days}
+               "unavailable_days": body.unavailable_days, "community_visible": body.community_visible}
     values = {k: v for k, v in columns.items() if v is not None}
     if values:
         sets = ", ".join(f"{k} = :{k}" for k in values)
@@ -337,5 +339,24 @@ def notifications(user: CurrentUser, db: DbSession):
             out.append({"id": f"asg-{r['id']}", "title": "New assignment", "body": f"You’ve been assigned as {r['role_title']}" + (f" for {r['target_label']}." if r["target_label"] else "."), "at": _iso(r["created_at"])})
         for r in db.execute(text("SELECT id, hours, target_label, created_at FROM volunteer_attendance WHERE volunteer_id=:v AND status IN ('Present','Late') ORDER BY created_at DESC LIMIT 10"), {"v": p["id"]}).mappings():
             out.append({"id": f"att-{r['id']}", "title": "Volunteer hours updated", "body": f"{float(r['hours']):g} hours from {r['target_label'] or 'your activity'} were added.", "at": _iso(r["created_at"])})
+        for r in db.execute(
+            text(
+                """SELECT id, title, body, created_at, read_at
+                   FROM community_notifications
+                   WHERE recipient_profile_id = :v
+                   ORDER BY created_at DESC
+                   LIMIT 30"""
+            ),
+            {"v": p["id"]},
+        ).mappings():
+            out.append(
+                {
+                    "id": f"community-{r['id']}",
+                    "title": r["title"],
+                    "body": r["body"],
+                    "at": _iso(r["created_at"]),
+                    "read": r["read_at"] is not None,
+                }
+            )
     out.sort(key=lambda n: n["at"] or "", reverse=True)
     return {"items": out[:30]}

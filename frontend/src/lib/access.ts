@@ -26,6 +26,7 @@ const RULES: [prefix: string, roles: AppRole[]][] = [
   ['/communication', ['Admin', 'Staff']],
   ['/birthday-project', ['Admin', 'Staff']],
   ['/donor-management', ['Admin', 'Staff']],
+  ['/people-management/tasks', ['Admin', 'Project Manager', 'Staff', 'Volunteer']],
   ['/admin', ['Admin']],
 ];
 

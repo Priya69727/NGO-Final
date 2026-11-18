@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Eye, UserCheck, CheckCircle2, AlertCircle, RefreshCw, FileText, Calendar, Star, Download, Upload } from 'lucide-react';
-import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
+import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, PhoneField, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
 import { peopleApi, type HrApplicant, type HrRequirement, type Department } from '../../../services/peopleApi';
 
 interface Props {
@@ -396,7 +396,7 @@ export default function RecruitmentTab({ departments, requirements, activeRequir
           onChange={v => setForm(f => ({ ...f, email: v }))}
           required
         />
-        <TextField
+        <PhoneField
           label="Phone Number"
           value={form.phone}
           onChange={v => setForm(f => ({ ...f, phone: v }))}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CalendarDays, ListChecks } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../services/apiClient';
 
@@ -25,6 +26,7 @@ export default function RoleHome() {
       <p className="mt-1 text-sm text-slate-500">
         {isVolunteer ? 'Your assigned tasks and the events coming up.' : 'Upcoming events across the organisation. Board access is read-only.'}
       </p>
+      {isVolunteer && <Link className="mt-4 inline-flex rounded-lg bg-teal-700 px-4 py-2 text-sm font-bold text-white hover:bg-teal-800" to="/people-management/tasks">Open task tracker</Link>}
       {error && <div role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</div>}
       {!data && !error && <p role="status" className="mt-6 text-sm text-slate-500">Loading…</p>}
       {data && (
