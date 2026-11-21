@@ -817,7 +817,7 @@ export default function CommunicationPage() {
               </span>
               <button
                 type="button"
-                className="text-slate-400"
+                className="btn-close-danger"
                 onClick={() => {
                   setSelectedAnnouncement(null)
                   setSelectedBroadcast(null)
