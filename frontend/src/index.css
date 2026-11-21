@@ -272,7 +272,7 @@ html[data-theme='dark'] .badge-gray { background: #374151; color: #D1D5DB; }
 }
 .form-label {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   margin-bottom: 5px;
   display: block;
@@ -803,4 +803,27 @@ html[data-theme='dark'] .border-gray-200 {
   body:has([data-certificate]) * { visibility: hidden !important; }
   [data-certificate], [data-certificate] * { visibility: visible !important; }
   [data-certificate] { position: fixed; inset: 0; display: grid; align-content: center; width: 100%; height: 100%; min-height: 0; box-sizing: border-box; break-inside: avoid; background: white !important; }
+}
+/* Red back and close buttons */
+.btn-back,
+.btn-close-danger {
+  background: #DC2626;
+  color: #FFFFFF;
+  border: 1px solid #DC2626;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  transition: background 0.2s ease;
+}
+
+.btn-back:hover,
+.btn-close-danger:hover {
+  background: #B91C1C;
+  border-color: #B91C1C;
+}
+
+.btn-back:disabled,
+.btn-close-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

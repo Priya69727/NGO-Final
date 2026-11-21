@@ -15,6 +15,33 @@ const statusStyle: Record<string, string> = {
   Scheduled: "badge badge-yellow", Completed: "badge badge-green", Cancelled: "badge badge-red",
 }
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+const fmtPhotoUpload = (iso: string) => {
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    return {
+      date: "Unavailable",
+      day: "Unavailable",
+      time: "Unavailable",
+    };
+  }
+
+  return {
+    date: date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    day: date.toLocaleDateString("en-IN", {
+      weekday: "long",
+    }),
+    time: date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  };
+};
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })
 const toLocalInputs = (iso: string) => {
   const d = new Date(iso)
@@ -187,7 +214,7 @@ export default function EventsPage() {
         <div className="card">
           <div className="card-header">
             <span className="card-title">{editing ? "Edit Event" : "Create Event"}</span>
-            <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="text-slate-400" aria-label="Close event form">✕</button>
+            <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="btn-close-danger" aria-label="Close event form">✕</button>
           </div>
           <form key={editing?.id ?? "new"} onSubmit={submitEvent} className="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label htmlFor="event-title" className="form-label">Event name</label>
@@ -222,7 +249,7 @@ export default function EventsPage() {
         <div className="card">
           <div className="card-header">
             <span className="card-title">{selected.title}</span>
-            <button type="button" onClick={() => setSelectedId(null)} className="text-slate-400" aria-label="Close event details">✕</button>
+            <button type="button" onClick={() => setSelectedId(null)} className="btn-close-danger" aria-label="Close event details">✕</button>
           </div>
           <div className="card-body flex flex-col gap-4 text-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -321,13 +348,48 @@ export default function EventsPage() {
                         <a href={ph.url} target="_blank" rel="noreferrer">
                           <img src={ph.url} alt={ph.caption || `Photo from ${selected.title}`} loading="lazy" className="w-full h-36 object-cover" />
                         </a>
-                        <figcaption className="p-2 text-xs text-slate-500">
-                          {ph.caption && <div className="text-slate-700 font-medium mb-0.5">{ph.caption}</div>}
-                          <div className="flex items-center justify-between gap-2">
-                            <span>{ph.uploadedByName ?? "Unknown"} · {fmtDate(ph.createdAt)}</span>
-                            {ph.canDelete && <button type="button" aria-label="Remove photo" className="text-slate-400 hover:text-red-500" onClick={() => void removePhoto(ph.id)}><Trash2 size={13} /></button>}
+                      <figcaption className="p-3 text-xs text-slate-600 space-y-2">
+                        {ph.caption && (
+                          <div className="font-semibold text-slate-800">
+                            {ph.caption}
                           </div>
-                        </figcaption>
+                        )}
+
+                        <div className="border-t border-slate-100 pt-2 space-y-1">
+                          <div>
+                            <strong>Uploaded by:</strong>{" "}
+                            {ph.uploadedByName ?? "Unknown"}
+                          </div>
+
+                          <div>
+                            <strong>Upload date:</strong>{" "}
+                            {fmtPhotoUpload(ph.createdAt).date}
+                          </div>
+
+                          <div>
+                            <strong>Day:</strong>{" "}
+                            {fmtPhotoUpload(ph.createdAt).day}
+                          </div>
+
+                          <div>
+                            <strong>Upload time:</strong>{" "}
+                            {fmtPhotoUpload(ph.createdAt).time}
+                          </div>
+                        </div>
+
+                        {ph.canDelete && (
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              aria-label="Remove photo"
+                              className="text-red-600 hover:text-red-800"
+                              onClick={() => void removePhoto(ph.id)}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        )}
+                      </figcaption> 
                       </figure>
                     ))}
                   </div>

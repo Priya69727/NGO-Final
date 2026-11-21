@@ -247,22 +247,119 @@ def transition_proposal(proposal_id: str, request: Request, user: CurrentUser, d
 
 # ───────────────────────── Detailed project planning ─────────────────────────
 
+
 PLAN_SECTIONS = {
-    "overview": {"title": "Project Overview", "fields": ["projectName", "visionMission", "sdgGoals", "duration", "location", "implementingTeam"],
-                 "required": ["projectName", "visionMission", "duration"]},
-    "beneficiary": {"title": "Beneficiary", "fields": ["primaryBeneficiaries", "secondaryBeneficiaries", "estimatedCount", "selectionCriteria", "beneficiaryNeeds"],
-                    "required": ["primaryBeneficiaries", "estimatedCount", "selectionCriteria"]},
-    "impact": {"title": "Expected Impact", "fields": ["directImpact", "indirectImpact", "societalImpact", "longTermOutcomes"],
-               "required": ["directImpact", "longTermOutcomes"]},
-    "stages": {"title": "Stages / Phases", "fields": ["phase1", "phase2", "phase3", "milestones", "timeline"],
-               "required": ["phase1", "milestones", "timeline"]},
-    "hr": {"title": "Human Resources", "fields": ["teamLead", "staffAssigned", "volunteersRequired", "volunteerRoles", "externalConsultants", "trainingNeeds"],
-           "required": ["teamLead", "staffAssigned", "volunteersRequired"]},
-    "operations": {"title": "Operations", "fields": ["venueSite", "equipmentNeeded", "logisticsPlan", "transportation", "totalEstimatedHours"],
-                   "required": ["venueSite", "logisticsPlan"]},
-    "budget": {"title": "Budget", "fields": ["personnelCosts", "materialCosts", "operationalCosts", "fundingSources", "contingencyReserve"],
-               "required": ["personnelCosts", "operationalCosts", "fundingSources"]},
+    "overview": {
+        "title": "Project Overview",
+        "fields": [
+            "projectName", "sector", "why", "problemStatement",
+            "visionMission", "currentStatus", "activeSince",
+            "sdgGoals", "duration", "location", "implementingTeam"
+        ],
+        "required": [
+            "projectName", "sector", "why", "problemStatement",
+            "currentStatus", "duration"
+        ],
+    },
+    "beneficiary": {
+        "title": "Beneficiaries",
+        "fields": [
+            "primaryBeneficiaries", "secondaryBeneficiaries",
+            "directBeneficiaryCount", "indirectBeneficiaryCount",
+            "beneficiaryCategories", "estimatedCount",
+            "selectionCriteria", "beneficiaryNeeds",
+            "beneficiaryDataSource", "specialRemark"
+        ],
+        "required": [
+            "primaryBeneficiaries", "directBeneficiaryCount",
+            "selectionCriteria"
+        ],
+    },
+    "impact": {
+        "title": "Expected Impact and KPIs",
+        "fields": [
+            "directImpact", "directKpis",
+            "indirectImpact", "indirectKpis",
+            "societalImpact", "societalKpis",
+            "longTermOutcomes"
+        ],
+        "required": ["directImpact", "longTermOutcomes"],
+    },
+    "stages": {
+        "title": "Project Stages and Timeline",
+        "fields": [
+            "phase0", "phase1", "phase2", "phase3", "phase4", "phase5",
+            "stage1Geography", "stage2Geography", "stage3Geography",
+            "stage1Timeline", "stage2Timeline", "stage3Timeline",
+            "milestones", "timeline"
+        ],
+        "required": ["phase0", "phase1", "phase2", "phase3",
+                     "phase4", "phase5", "milestones", "timeline"],
+    },
+    "team": {
+        "title": "Teams and Partnerships",
+        "fields": [
+            "coreTeam", "advisoryTeam", "workingTeam",
+            "stakeholders", "workingPartners", "sameFieldNgos",
+            "implementingTeam"
+        ],
+        "required": ["coreTeam", "workingTeam"],
+    },
+    "hr": {
+        "title": "Human Resources",
+        "fields": [
+            "teamLead", "staffAssigned", "volunteersRequired",
+            "volunteerRoles", "externalConsultants", "trainingNeeds",
+            "authorityStaff", "officeStaff", "fieldStaff",
+            "staffQuantity", "salaryPackage", "totalSalaryCost"
+        ],
+        "required": ["teamLead", "staffAssigned", "volunteersRequired"],
+    },
+    "operations": {
+        "title": "Operations and Logistics",
+        "fields": [
+            "venueSite", "equipmentNeeded", "logisticsPlan",
+            "transportation", "totalEstimatedHours",
+            "frequentOperations", "infrequentOperations"
+        ],
+        "required": ["venueSite", "logisticsPlan"],
+    },
+    "assets": {
+        "title": "Assets and Equipment",
+        "fields": [
+            "smallAssets", "bigAssets",
+            "smallAssetQuantity", "bigAssetQuantity",
+            "smallAssetCost", "bigAssetCost", "totalAssetCost"
+        ],
+        "required": ["smallAssets", "bigAssets"],
+    },
+    "budget": {
+        "title": "Budget, Funding and Sponsorship",
+        "fields": [
+            "personnelCosts", "materialCosts", "operationalCosts",
+            "annualBudget", "fundingPriority1", "fundingPriority2",
+            "fundingPriority3", "fundingSources", "publicCallToAction",
+            "potentialDonors", "materialSponsorship",
+            "eventSponsorship", "marketingSponsorship",
+            "contingencyReserve"
+        ],
+        "required": [
+            "personnelCosts", "operationalCosts",
+            "annualBudget", "fundingSources"
+        ],
+    },
+    "departments": {
+        "title": "Department Priorities",
+        "fields": [
+            "departmentPriority1", "departmentPriority2",
+            "departmentPriority3", "departmentPriority4",
+            "departmentPriority5", "departmentPriority6",
+            "departmentPriority7"
+        ],
+        "required": [],
+    },
 }
+
 
 
 def _months_between(start, end):
@@ -290,13 +387,32 @@ def _merged_sections(p: dict, saved: dict) -> dict:
     return out
 
 
+
 def _section_completion(sections: dict, saved: dict) -> dict:
     result = {}
-    stored = saved.get("sections") or {}
+
     for key, spec in PLAN_SECTIONS.items():
-        filled = [f for f in spec["required"] if str(sections[key].get(f, "")).strip()]
-        result[key] = round(len(filled) / len(spec["required"]) * 100)
+        required_fields = spec.get("required", [])
+
+        # Avoid division by zero for sections without required fields.
+        if not required_fields:
+            result[key] = 100
+            continue
+
+        section_data = (sections or {}).get(key) or {}
+
+        filled = [
+            field
+            for field in required_fields
+            if str(section_data.get(field, "")).strip()
+        ]
+
+        result[key] = round(
+            len(filled) / len(required_fields) * 100
+        )
+
     return result
+
 
 
 def _overall_completion(saved: dict) -> int:
