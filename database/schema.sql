@@ -401,6 +401,15 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
     manager_id uuid REFERENCES users(id) ON DELETE SET NULL,
     salary numeric(14, 2) CHECK (salary IS NULL OR salary >= 0),
     status text NOT NULL DEFAULT 'Active' CHECK (status IN ('Active', 'On Leave', 'Inactive')),
+    aadhaar_card_url text,
+    pan_card_url text,
+    resume_url text,
+    other_documents jsonb NOT NULL DEFAULT '[]'::jsonb,
+    bank_account_holder_name text,
+    bank_account_number text,
+    ifsc_code text,
+    bank_name text,
+    branch_details text,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );

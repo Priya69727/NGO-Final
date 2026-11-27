@@ -352,7 +352,7 @@ export function BirthdayProjectProfiles() {
           <p className="page-subtitle">Search, maintain, and segment contacts for birthdays and special occasion greetings</p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-secondary text-sm" onClick={handleExport}><Download size={15} /> Export CSV</button>
+          <button className="btn-download text-sm" onClick={handleExport}><Download size={15} /> Export CSV</button>
           <label className="btn-secondary text-sm cursor-pointer">
             <Download size={15} /> Bulk import
             <input type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => void handleImport(e.target.files?.[0])} />
@@ -1217,7 +1217,7 @@ export function BirthdayProjectReports() {
           <select className="form-input !w-auto text-sm" value={period} onChange={(e) => setPeriod(e.target.value)}>
             {['Monthly', 'Quarterly', 'Annual'].map((p) => <option key={p}>{p}</option>)}
           </select>
-          <button className="btn-primary text-sm" onClick={handleExport}><Download size={15} /> Export Reports</button>
+          <button className="btn-download text-sm" onClick={handleExport}><Download size={15} /> Export Reports</button>
         </div>
       </div>
 
@@ -1811,7 +1811,7 @@ export function DonorManagementDirectory() {
           <p className="page-subtitle">Search, filter, edit, and track lifetime engagement and giving records</p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-secondary text-sm" onClick={handleExport}><Download size={15} /> Export CSV</button>
+          <button className="btn-download text-sm" onClick={handleExport}><Download size={15} /> Export CSV</button>
           <button className="btn-primary text-sm" onClick={() => setShowAdd(true)}><Plus size={15} /> Add Donor</button>
         </div>
       </div>
@@ -2327,7 +2327,7 @@ export function DonorManagementCampaigns() {
               <div>Status: <span className="font-semibold">{selectedCampaign.status}</span></div>
               <div>Cause: <span className="font-semibold text-teal-700">{selectedCampaign.cause ?? 'Education'}</span></div>
             </div>
-            <button className="btn-secondary w-full justify-center" onClick={() => {
+            <button className="btn-download w-full justify-center" onClick={() => {
               notifyModule(`Campaign report generated for ${selectedCampaign.name}`);
               setSelectedCampaign(null);
             }}><Eye size={15} /> Download Campaign Performance Summary</button>
@@ -2599,7 +2599,7 @@ export function DonorManagementReports() {
           <select className="form-input !w-auto text-sm" value={period} onChange={(e) => setPeriod(e.target.value)}>
             {['Monthly', 'Quarterly', 'Yearly'].map((p) => <option key={p}>{p}</option>)}
           </select>
-          <button className="btn-primary text-sm" onClick={handleExportAll}><Download size={15} /> Export Reports</button>
+          <button className="btn-download text-sm" onClick={handleExportAll}><Download size={15} /> Export Reports</button>
         </div>
       </div>
 
@@ -2631,7 +2631,7 @@ export function DonorManagementReports() {
                   <td>{item.owner}</td>
                   <td><StatusBadge label={item.status} tone="green" /></td>
                   <td>
-                    <button className="btn-secondary !py-1 text-xs" onClick={() => {
+                    <button className="btn-download !py-1 text-xs" onClick={() => {
                       downloadCsv(`${item.name.toLowerCase().replace(/\s+/g, '-')}.csv`, [
                         ['Report', item.name],
                         ['Period', item.period],

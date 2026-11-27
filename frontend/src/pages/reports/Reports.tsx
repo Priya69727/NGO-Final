@@ -109,7 +109,7 @@ export default function ReportsPage() {
           <p className="page-subtitle">Comprehensive reporting across all Hope Foundation activities</p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-secondary" onClick={() => downloadCsv('hope-foundation-reports.csv', [['Report Name', 'Type', 'Date', 'Format'], ...reports.map(report => [report.name, report.type, report.date, report.format])])}><Download size={15} /> Export All</button>
+          <button className="btn-download" onClick={() => downloadCsv('hope-foundation-reports.csv', [['Report Name', 'Type', 'Date', 'Format'], ...reports.map(report => [report.name, report.type, report.date, report.format])])}><Download size={15} /> Export All</button>
           <button className="btn-primary" onClick={() => setGenerateOpen(true)}>Generate Report</button>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function ReportsPage() {
                       <span className="badge badge-green">{r.format}</span>
                     </td>
                     <td>
-                      <button className="btn-secondary text-xs py-1 flex items-center gap-1" onClick={() => downloadReport(r)}>
+                      <button className="btn-download text-xs py-1 flex items-center gap-1" onClick={() => downloadReport(r)}>
                         <Download size={12} /> Download
                       </button>
                     </td>

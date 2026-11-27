@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarCheck, Check, Plus, X, AlertCircle, CheckCircle2, RefreshCw, Clock } from 'lucide-react';
 import { Avatar, DataTable, FilterBar, Modal, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
+import AttendanceCalendar from './AttendanceCalendar';
 import { peopleApi, type StaffProfile, type StaffAttendanceRecord, type StaffLeaveApplication } from '../../../services/peopleApi';
 
 interface Props {
@@ -267,11 +268,12 @@ export default function AttendanceTab({ employees, onRefreshStats }: Props) {
               <Check size={14} />
             </button>
             <button
-              className="p-1 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 transition-colors"
+              className="people-close-button"
+              aria-label="Reject leave"
               title="Reject Leave"
               onClick={() => handleLeaveDecision(l.id, 'Rejected')}
             >
-              <X size={14} />
+              <X size={18} />
             </button>
           </div>
         ) : (
@@ -298,6 +300,8 @@ export default function AttendanceTab({ employees, onRefreshStats }: Props) {
           <button onClick={fetchData} className="btn-secondary text-xs py-1 px-2.5">Retry</button>
         </div>
       )}
+
+      <AttendanceCalendar employees={employees} attendanceRecords={attendanceRecords} leaves={leaves} />
 
       {/* Leave Requests Card */}
       <div className="card overflow-hidden">

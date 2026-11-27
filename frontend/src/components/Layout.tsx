@@ -254,6 +254,21 @@ const navConfig: NavItem[] = [
         icon: <UsersRound size={14} />,
       },
       {
+        label: "People Calendar",
+        path: "/people-management/calendar",
+        icon: <CalendarDays size={14} />,
+      },
+      {
+        label: "People Tasks",
+        path: "/people-management/tasks",
+        icon: <Check size={14} />,
+      },
+      {
+        label: "Attendance Overview",
+        path: "/people-management/attendance",
+        icon: <CalendarClock size={14} />,
+      },
+      {
         label: "HR Management",
         path: "/people-management/hr",
         icon: <Briefcase size={14} />,
@@ -373,6 +388,7 @@ export default function Layout() {
   const navigate = useNavigate()
   const isOps = user?.role === "Admin" || user?.role === "Project Manager" || user?.role === "Staff"
   const headerActionsRef = useRef<HTMLDivElement>(null)
+  const globalSearchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -481,6 +497,12 @@ export default function Layout() {
       return "Project Details"
 
     if (location.pathname === "/home") return "My Workspace"
+    if (location.pathname.startsWith("/people-management")) {
+      if (location.pathname.endsWith("/calendar")) return "People Calendar"
+      if (location.pathname.endsWith("/tasks")) return "People Tasks"
+      if (location.pathname.endsWith("/attendance")) return "People Attendance"
+      return "People Management"
+    }
     let best: { label: string; len: number } | null = null
     for (const item of navConfig) {
       if (item.path && location.pathname === item.path) return item.label
@@ -613,16 +635,23 @@ export default function Layout() {
             ref={headerActionsRef}
             className="relative flex shrink-0 items-center gap-1 sm:gap-2"
           >
-            <div className="relative hidden lg:block">
-              <Search
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
+            <div className="search-control hidden w-52 lg:flex">
               <input
+                ref={globalSearchRef}
                 type="text"
                 placeholder="Search..."
-                className="pl-9 pr-4 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:border-teal-600 dark:focus:border-teal-400 w-48 transition-colors"
+                aria-label="Search"
+                className="form-input text-sm"
               />
+              <button
+                type="button"
+                className="search-control-button"
+                aria-label="Focus search field"
+                title="Search"
+                onClick={() => globalSearchRef.current?.focus()}
+              >
+                <Search size={16} aria-hidden />
+              </button>
             </div>
             <span className="hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 md:inline-flex">
               {user?.role}

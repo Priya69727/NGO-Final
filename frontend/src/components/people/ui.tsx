@@ -104,7 +104,7 @@ export function ReportGrid({ reports, accent }: { reports: ReportDef[]; accent: 
             <p className="text-xs text-slate-500 mt-1">{r.description}</p>
             <p className="text-[11px] text-slate-400 mt-2">{r.rows.length} records · CSV</p>
           </div>
-          <button className="btn-secondary w-fit" onClick={() => downloadCsv(r.title.replace(/\W+/g, '_').toLowerCase(), r.rows)} aria-label={`Download ${r.title}`}><Download size={14} /> Download</button>
+          <button className="btn-download w-fit" onClick={() => downloadCsv(r.title.replace(/\W+/g, '_').toLowerCase(), r.rows)} aria-label={`Download ${r.title}`}><Download size={14} /> Download</button>
         </div>
       ))}
     </div>

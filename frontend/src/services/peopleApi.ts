@@ -75,6 +75,15 @@ export interface StaffProfile {
   address?: string;
   emergencyContact?: string;
   qualifications?: any;
+  aadhaarCardUrl?: string | null;
+  panCardUrl?: string | null;
+  resumeUrl?: string | null;
+  otherDocuments?: { name: string; url: string }[];
+  bankAccountHolderName?: string | null;
+  bankAccountNumber?: string | null;
+  ifscCode?: string | null;
+  bankName?: string | null;
+  branchDetails?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1323,7 +1323,7 @@ export default function BeneficiariesPage() {
                         <button
                           type="button"
                           onClick={downloadTemplate}
-                          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-teal-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-teal-800"
+                          className="btn-download mt-3 px-3 py-2 text-xs"
                         >
                           <Download size={14} />
                           Download CSV Template

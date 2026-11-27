@@ -798,7 +798,7 @@ export default function PortfolioOverview() {
             type="button"
             onClick={() => void loadPortfolio()}
             disabled={loading}
-            className="btn-secondary flex items-center gap-2"
+            className="btn-download flex items-center gap-2"
           >
             <RefreshCw
               size={15}
@@ -1384,7 +1384,7 @@ export default function PortfolioOverview() {
                               type="button"
                               onClick={() => exportProject(row)}
                               title="Export project details"
-                              className="rounded-lg p-2 text-indigo-700 hover:bg-indigo-50"
+                              className="btn-download !p-2"
                             >
                               <Download size={16} />
                             </button>

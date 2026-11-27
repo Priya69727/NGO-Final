@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Eye, CheckCircle2, AlertCircle, RefreshCw, Download, Upload, UserCheck, XCircle, ArrowRight } from 'lucide-react';
 import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, PhoneField, SelectField, StatusBadge, TextAreaField, TextField, ACCENT, type Column } from '../../../components/people';
+import { useToast } from '../../../components/projects/Toast';
 import { peopleApi, type InternApplication, type Department, type StaffProfile } from '../../../services/peopleApi';
 
 interface Props {
@@ -34,6 +35,7 @@ const blankApp = {
 };
 
 export default function ApplicationsTab({ departments, mentors, onRefreshStats, onInternCreated }: Props) {
+  const toast = useToast();
   const [applications, setApplications] = useState<InternApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +128,7 @@ export default function ApplicationsTab({ departments, mentors, onRefreshStats, 
         appliedOn: new Date().toISOString().slice(0, 10),
       });
 
-      setNotification(`Application submitted successfully for ${form.fullName}.`);
+      toast.success('Your application has been successfully submitted.');
       setAddOpen(false);
       setForm(blankApp);
       await fetchApplications();
@@ -580,7 +582,7 @@ export default function ApplicationsTab({ departments, mentors, onRefreshStats, 
                   href={selectedApp.resumeUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="btn-secondary !py-1 !px-2.5 text-xs flex items-center gap-1"
+                  className="btn-download !py-1 !px-2.5 text-xs flex items-center gap-1"
                 >
                   <Download size={13} /> View Resume
                 </a>

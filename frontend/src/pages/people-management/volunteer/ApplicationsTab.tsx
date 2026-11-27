@@ -19,7 +19,7 @@ export default function ApplicationsTab({ applications, volunteers, onSet }: { a
         {a.status === 'New' && <button className="btn-secondary !py-1 !px-2.5 !text-xs" onClick={() => onSet(a.id, 'Under Review')}>Start review</button>}
         {(a.status === 'New' || a.status === 'Under Review') && <>
           <button className="p-1.5 rounded bg-teal-50 text-teal-700 hover:bg-teal-100" aria-label={`Approve ${a.name}`} onClick={() => onSet(a.id, 'Approved')}><Check size={14} /></button>
-          <button className="p-1.5 rounded bg-red-50 text-red-600 hover:bg-red-100" aria-label={`Reject ${a.name}`} onClick={() => onSet(a.id, 'Rejected')}><X size={14} /></button></>}
+          <button className="people-close-button" aria-label={`Reject ${a.name}`} title="Reject" onClick={() => onSet(a.id, 'Rejected')}><X size={18} /></button></>}
         {(a.status === 'Approved' || a.status === 'Rejected') && <StatusBadge status={a.status} />}
       </div>) },
   ];

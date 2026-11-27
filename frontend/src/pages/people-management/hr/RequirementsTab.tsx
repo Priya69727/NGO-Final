@@ -349,8 +349,8 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
             <h2 className="card-title">Staff Requirements ({filteredRequirements.length})</h2>
             {loading && <RefreshCw size={14} className="animate-spin text-teal-600" />}
           </div>
-          <button className="btn-primary" onClick={() => setAddOpen(true)}>
-            <Plus size={14} /> Add Requirement
+          <button className="btn-primary font-bold" onClick={() => setAddOpen(true)}>
+            <Plus size={14} /> Create New HR Requirement
           </button>
         </div>
         <DataTable
@@ -528,7 +528,7 @@ export default function RequirementsTab({ departments, onRefreshStats, onSelectR
       <DetailDrawer
         open={!!selectedReq}
         onClose={() => setSelectedReq(null)}
-        title={selectedReq?.title ?? ''}
+        title={(selectedReq?.title ?? '').toUpperCase()}
         subtitle={selectedReq ? `${selectedReq.openings} position(s) · ${selectedReq.urgency} priority` : ''}
         accent={ACCENT.hr}
       >

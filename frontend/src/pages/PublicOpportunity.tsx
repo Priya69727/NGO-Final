@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, BriefcaseBusiness, CheckCircle2, Clock3, MapPin } from 'lucide-react';
 import PhoneField from '../components/people/PhoneField';
+import { useToast } from '../components/projects/Toast';
 import { peopleApi, type PeopleOpportunity } from '../services/peopleApi';
 
 const emptyApplication = {
@@ -17,6 +18,7 @@ const emptyApplication = {
 
 export default function PublicOpportunityPage() {
   const { slug = '' } = useParams();
+  const toast = useToast();
   const [opportunity, setOpportunity] = useState<Omit<PeopleOpportunity, 'id' | 'status'> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -55,6 +57,7 @@ export default function PublicOpportunityPage() {
         experienceYears: form.experienceYears ? Number(form.experienceYears) : 0,
       });
       setSubmitted(true);
+      toast.success('Your application has been successfully submitted.');
       setForm(emptyApplication);
     } catch (submitError) {
       setApplicationError(submitError instanceof Error ? submitError.message : 'Your application could not be submitted. Please try again.');

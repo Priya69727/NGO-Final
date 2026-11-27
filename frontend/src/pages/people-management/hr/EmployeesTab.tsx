@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Eye, Edit3, CheckCircle2, AlertCircle, RefreshCw, DollarSign, Calendar, Award } from 'lucide-react';
+import { Plus, Eye, Edit3, CheckCircle2, AlertCircle, RefreshCw, DollarSign, Calendar, Award, X } from 'lucide-react';
 import { Avatar, DataTable, DetailDrawer, FilterBar, InfoGrid, Modal, PhoneField, SectionTitle, SelectField, StatusBadge, SubTabs, TextField, ACCENT, type Column } from '../../../components/people';
 import { peopleApi, type StaffProfile, type Department, type StaffLeaveApplication, type StaffPerformanceReview, type StaffPayrollRecord } from '../../../services/peopleApi';
 
@@ -10,7 +10,9 @@ interface Props {
   onRefreshStats?: () => void;
 }
 
-const SUB_TABS = ['Personal Details', 'Employment Info', 'Qualifications', 'Leave History', 'Performance', 'Salary & Payroll'];
+const SUB_TABS = ['Personal Details', 'Employment Info', 'Qualifications', 'Documents & Banking', 'Leave History', 'Performance', 'Salary & Payroll'];
+
+type EmployeeDocumentField = 'aadhaarCardUrl' | 'panCardUrl' | 'resumeUrl' | 'otherDocuments';
 
 const blankForm = {
   fullName: '',
@@ -28,6 +30,15 @@ const blankForm = {
   emergencyContact: '',
   degree: '',
   institution: '',
+  aadhaarCardUrl: '',
+  panCardUrl: '',
+  resumeUrl: '',
+  otherDocuments: [] as { name: string; url: string }[],
+  bankAccountHolderName: '',
+  bankAccountNumber: '',
+  ifscCode: '',
+  bankName: '',
+  branchDetails: '',
 };
 
 export default function EmployeesTab({ departments, addOpen = false, setAddOpen, onRefreshStats }: Props) {
@@ -55,6 +66,13 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
   const setIsAddOpen = setAddOpen || setLocalAddOpen;
   const [form, setForm] = useState(blankForm);
   const [formError, setFormError] = useState('');
+  const [documentUploadError, setDocumentUploadError] = useState('');
+  const [uploadingDocuments, setUploadingDocuments] = useState<Record<EmployeeDocumentField, boolean>>({
+    aadhaarCardUrl: false,
+    panCardUrl: false,
+    resumeUrl: false,
+    otherDocuments: false,
+  });
   const [saving, setSaving] = useState(false);
 
   // Edit Modal state
@@ -83,6 +101,52 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
     setActionSuccess(msg);
     setTimeout(() => setActionSuccess(null), 3500);
   };
+
+  const uploadDocument = async (field: EmployeeDocumentField, file: File): Promise<boolean> => {
+    setDocumentUploadError('');
+    setUploadingDocuments(current => ({ ...current, [field]: true }));
+    try {
+      const uploaded = await peopleApi.uploadFile(file);
+      if (field === 'otherDocuments') {
+        setForm(current => ({
+          ...current,
+          otherDocuments: [...current.otherDocuments, { name: uploaded.originalName, url: uploaded.url }],
+        }));
+      } else {
+        setForm(current => ({ ...current, [field]: uploaded.url }));
+      }
+      return true;
+    } catch (err) {
+      setDocumentUploadError(err instanceof Error ? err.message : 'Document upload failed.');
+      return false;
+    } finally {
+      setUploadingDocuments(current => ({ ...current, [field]: false }));
+    }
+  };
+
+  const documentField = (label: string, field: Exclude<EmployeeDocumentField, 'otherDocuments'>) => (
+    <label className="form-label">
+      {label}
+      <input
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png,.webp"
+        className="form-input mt-1 !py-2 text-xs"
+        disabled={uploadingDocuments[field]}
+        onChange={event => {
+          const file = event.currentTarget.files?.[0];
+          if (file) void uploadDocument(field, file);
+          event.currentTarget.value = '';
+        }}
+      />
+      {uploadingDocuments[field] ? (
+        <span className="mt-1 block text-xs text-blue-600">Uploading…</span>
+      ) : form[field] ? (
+        <a href={form[field]} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-blue-700 hover:underline">
+          View uploaded document
+        </a>
+      ) : null}
+    </label>
+  );
 
   // When an employee is selected, fetch their leaves, performance reviews, and payroll history
   const openDetail = async (staff: StaffProfile) => {
@@ -124,6 +188,10 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
       setFormError('Salary cannot be negative.');
       return;
     }
+    if (Object.values(uploadingDocuments).some(Boolean)) {
+      setFormError('Wait for document uploads to finish before adding the employee.');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -150,11 +218,21 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
         address: form.address.trim() || undefined,
         emergencyContact: form.emergencyContact.trim() || undefined,
         qualifications: form.degree ? [{ degree: form.degree, institution: form.institution }] : [],
+        aadhaarCardUrl: form.aadhaarCardUrl || undefined,
+        panCardUrl: form.panCardUrl || undefined,
+        resumeUrl: form.resumeUrl || undefined,
+        otherDocuments: form.otherDocuments,
+        bankAccountHolderName: form.bankAccountHolderName.trim() || undefined,
+        bankAccountNumber: form.bankAccountNumber.trim() || undefined,
+        ifscCode: form.ifscCode.trim().toUpperCase() || undefined,
+        bankName: form.bankName.trim() || undefined,
+        branchDetails: form.branchDetails.trim() || undefined,
       };
 
       const created = await peopleApi.createEmployee(payload);
       setEmployees(prev => [created, ...prev]);
-      setForm(blankForm);
+      setForm({ ...blankForm, otherDocuments: [] });
+      setDocumentUploadError('');
       setIsAddOpen(false);
       showNotification(`Employee ${created.fullName} (${created.employeeCode}) added successfully.`);
       if (onRefreshStats) onRefreshStats();
@@ -395,6 +473,7 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
         title="Add New Employee"
         submitLabel={saving ? 'Saving...' : 'Add Employee'}
         onSubmit={handleAddSubmit}
+        wide
       >
         {formError && (
           <div className="p-2.5 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-rose-700 text-xs mb-3 flex items-center gap-2">
@@ -494,6 +573,51 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
           placeholder="e.g. Pune University"
           wide
         />
+        <div className="border-t border-slate-200 pt-4">
+          <h3 className="mb-3 text-sm font-extrabold text-slate-800">Personal and KYC Documents</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {documentField('Aadhaar Card', 'aadhaarCardUrl')}
+            {documentField('PAN Card', 'panCardUrl')}
+            {documentField('CV / Resume', 'resumeUrl')}
+            <label className="form-label">
+              Other Documents
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                multiple
+                className="form-input mt-1 !py-2 text-xs"
+                disabled={uploadingDocuments.otherDocuments}
+                onChange={event => {
+                  const files = Array.from(event.currentTarget.files ?? []);
+                  event.currentTarget.value = '';
+                  void (async () => {
+                    for (const file of files) {
+                      if (!await uploadDocument('otherDocuments', file)) break;
+                    }
+                  })();
+                }}
+              />
+              {uploadingDocuments.otherDocuments && <span className="mt-1 block text-xs text-blue-600">Uploading…</span>}
+              {form.otherDocuments.map(document => (
+                <span key={document.url} className="mt-1 flex items-center justify-between gap-2 text-xs">
+                  <a href={document.url} target="_blank" rel="noreferrer" className="truncate font-semibold text-blue-700 hover:underline">{document.name}</a>
+                  <button type="button" aria-label={`Remove ${document.name}`} title="Remove document" className="people-close-button" onClick={() => setForm(current => ({ ...current, otherDocuments: current.otherDocuments.filter(item => item.url !== document.url) }))}><X size={18} /></button>
+                </span>
+              ))}
+            </label>
+          </div>
+          {documentUploadError && <p role="alert" className="mt-2 text-xs text-rose-600">{documentUploadError}</p>}
+        </div>
+        <div className="border-t border-slate-200 pt-4">
+          <h3 className="mb-3 text-sm font-extrabold text-slate-800">Bank Details</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField label="Bank Account Holder Name" value={form.bankAccountHolderName} onChange={v => setForm(current => ({ ...current, bankAccountHolderName: v }))} />
+            <TextField label="Bank Account Number" value={form.bankAccountNumber} onChange={v => setForm(current => ({ ...current, bankAccountNumber: v }))} />
+            <TextField label="IFSC Code" value={form.ifscCode} onChange={v => setForm(current => ({ ...current, ifscCode: v.toUpperCase() }))} />
+            <TextField label="Bank Name" value={form.bankName} onChange={v => setForm(current => ({ ...current, bankName: v }))} />
+            <TextField label="Branch Details" value={form.branchDetails} onChange={v => setForm(current => ({ ...current, branchDetails: v }))} wide />
+          </div>
+        </div>
       </Modal>
 
       {/* Edit Employee Modal */}
@@ -645,6 +769,34 @@ export default function EmployeesTab({ departments, addOpen = false, setAddOpen,
                 ) : (
                   <p className="text-sm text-slate-500">No educational qualifications recorded.</p>
                 )}
+              </div>
+            )}
+
+            {subTab === 'Documents & Banking' && (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <SectionTitle>Personal and KYC Documents</SectionTitle>
+                  <InfoGrid
+                    items={[
+                      ['Aadhaar Card', selectedStaff.aadhaarCardUrl ? <a href={selectedStaff.aadhaarCardUrl} target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">View document</a> : 'Not uploaded'],
+                      ['PAN Card', selectedStaff.panCardUrl ? <a href={selectedStaff.panCardUrl} target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">View document</a> : 'Not uploaded'],
+                      ['CV / Resume', selectedStaff.resumeUrl ? <a href={selectedStaff.resumeUrl} target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">View document</a> : 'Not uploaded'],
+                      ['Other Documents', selectedStaff.otherDocuments?.length ? <div className="flex flex-col gap-1">{selectedStaff.otherDocuments.map(document => <a key={document.url} href={document.url} target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">{document.name}</a>)}</div> : 'Not uploaded'],
+                    ]}
+                  />
+                </div>
+                <div>
+                  <SectionTitle>Bank Details</SectionTitle>
+                  <InfoGrid
+                    items={[
+                      ['Account Holder Name', selectedStaff.bankAccountHolderName || '—'],
+                      ['Account Number', selectedStaff.bankAccountNumber || '—'],
+                      ['IFSC Code', selectedStaff.ifscCode || '—'],
+                      ['Bank Name', selectedStaff.bankName || '—'],
+                      ['Branch Details', selectedStaff.branchDetails || '—'],
+                    ]}
+                  />
+                </div>
               </div>
             )}
 

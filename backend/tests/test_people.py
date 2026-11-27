@@ -37,6 +37,15 @@ def _install_people_test_tables(db_session_factory):
             address TEXT NOT NULL DEFAULT '',
             emergency_contact TEXT NOT NULL DEFAULT '',
             qualifications JSON NOT NULL DEFAULT '[]',
+            aadhaar_card_url TEXT,
+            pan_card_url TEXT,
+            resume_url TEXT,
+            other_documents JSON NOT NULL DEFAULT '[]',
+            bank_account_holder_name TEXT,
+            bank_account_number TEXT,
+            ifsc_code TEXT,
+            bank_name TEXT,
+            branch_details TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""",
@@ -509,6 +518,30 @@ def test_intern_and_volunteer_workflows(client, db_session_factory):
 def test_shared_people_tasks_calendar_and_public_opportunities(client, db_session_factory):
     _install_people_test_tables(db_session_factory)
     _login_admin(client, db_session_factory)
+    employee = client.post(
+        "/api/staff",
+        json={
+            "employeeCode": "EMP-KYC",
+            "fullName": "KYC Employee",
+            "jobTitle": "Coordinator",
+            "aadhaarCardUrl": "/uploads/aadhaar.pdf",
+            "panCardUrl": "/uploads/pan.pdf",
+            "resumeUrl": "/uploads/resume.pdf",
+            "otherDocuments": [{"name": "certificate.pdf", "url": "/uploads/certificate.pdf"}],
+            "bankAccountHolderName": "KYC Employee",
+            "bankAccountNumber": "001234567890",
+            "ifscCode": "ABCD0123456",
+            "bankName": "Hope Bank",
+            "branchDetails": "Pune Main",
+        },
+    )
+    assert employee.status_code == 201, employee.text
+    assert employee.json()["aadhaarCardUrl"] == "/uploads/aadhaar.pdf"
+    assert employee.json()["otherDocuments"] == [
+        {"name": "certificate.pdf", "url": "/uploads/certificate.pdf"}
+    ]
+    assert employee.json()["bankAccountNumber"] == "001234567890"
+
     with db_session_factory() as db:
         admin = db.query(User).filter_by(email="admin@ngo.org").one()
         staff_id = str(uuid4())

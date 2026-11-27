@@ -26,7 +26,7 @@ export default function DepartmentReports() {
           <h1 className="page-title">Department Reports</h1>
           <p className="page-subtitle">Performance overview across all 9 organizational departments</p>
         </div>
-        <button className="btn-secondary"><Download size={15} /> Export All</button>
+        <button className="btn-download"><Download size={15} /> Export All</button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

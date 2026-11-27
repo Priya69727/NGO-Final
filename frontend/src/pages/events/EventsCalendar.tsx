@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { listEvents, type EventRecord } from "../../services/eventApi"
+import { getIndianNationalHolidays } from "../../data/nationalHolidays"
 
 const MONTHS = [
   "January",
@@ -48,6 +49,16 @@ export default function EventsCalendar() {
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const eventsByDay = new Map<number, EventRecord[]>()
+  const holidaysByDay = new Map<number, string[]>()
+  for (const holiday of getIndianNationalHolidays(year)) {
+    const [holidayYear, holidayMonth, holidayDay] = holiday.date.split("-").map(Number)
+    if (holidayYear === year && holidayMonth === month + 1) {
+      holidaysByDay.set(holidayDay, [
+        ...(holidaysByDay.get(holidayDay) ?? []),
+        holiday.name,
+      ])
+    }
+  }
   for (const event of events) {
     const date = new Date(event.startsAt)
     if (
@@ -85,7 +96,7 @@ export default function EventsCalendar() {
         <div>
           <h1 className="page-title">Events Calendar</h1>
           <p className="page-subtitle">
-            View and plan events on the interactive calendar
+            View events and India’s national holidays on the calendar
           </p>
         </div>
         <button className="btn-primary" onClick={() => navigate("/events")}>
@@ -97,6 +108,10 @@ export default function EventsCalendar() {
 
       {/* Legend */}
       <div className="flex gap-4 flex-wrap">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <span className="w-3 h-3 rounded-sm bg-rose-100 ring-1 ring-rose-300" />
+          National holiday
+        </div>
         {[
           { label: "Fundraiser", color: "#1AACB8" },
           { label: "Training", color: "#6366F1" },
@@ -155,6 +170,7 @@ export default function EventsCalendar() {
             {cells.map((day, i) => {
               if (!day) return <div key={i} />
               const dayEvents = eventsByDay.get(day) ?? []
+              const dayHolidays = holidaysByDay.get(day) ?? []
               const isToday =
                 day === today.getDate() &&
                 month === today.getMonth() &&
@@ -178,17 +194,28 @@ export default function EventsCalendar() {
                     {day}
                   </div>
                   <div className="flex flex-col gap-0.5">
+                    {dayHolidays.map((holiday) => (
+                      <div
+                        key={holiday}
+                        className="border-l-2 border-rose-500 bg-rose-50 px-1 py-0.5 text-[10px] font-bold text-rose-800 truncate"
+                        title={`National holiday: ${holiday}`}
+                      >
+                        {holiday}
+                      </div>
+                    ))}
                     {dayEvents.map((ev, j) => (
                       <div
                         key={`${ev.id}-${j}`}
-                        className="text-[10px] font-medium px-1.5 py-0.5 rounded text-white truncate"
+                        className="border-l-2 text-[10px] font-semibold px-1 py-0.5 truncate"
                         title={`${ev.title} · ${new Date(ev.startsAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} · ${ev.status}`}
                         style={{
-                          background: ev.status === "Cancelled" ? "#CBD5E1" : (eventColors[ev.eventType] ?? "#64748B"),
+                          borderColor: ev.status === "Cancelled" ? "#94A3B8" : (eventColors[ev.eventType] ?? "#64748B"),
+                          background: ev.status === "Cancelled" ? "#F1F5F9" : `${eventColors[ev.eventType] ?? "#64748B"}18`,
+                          color: ev.status === "Cancelled" ? "#64748B" : (eventColors[ev.eventType] ?? "#475569"),
                           textDecoration: ev.status === "Cancelled" ? "line-through" : undefined,
                         }}
                       >
-                        {ev.title}
+                        <span className="font-bold">{ev.eventType} · </span>{ev.title}
                       </div>
                     ))}
                   </div>

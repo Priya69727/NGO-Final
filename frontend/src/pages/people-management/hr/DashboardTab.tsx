@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, UserCheck, UserX, Building2, ClipboardList, Clock, CalendarCheck, RefreshCw, AlertCircle } from 'lucide-react';
+import { Users, UserCheck, UserX, Building2, ClipboardList, Clock, CalendarCheck, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { StatCard, ACCENT } from '../../../components/people';
 import { peopleApi, type HrDashboardData } from '../../../services/peopleApi';
@@ -61,7 +61,16 @@ export default function DashboardTab({ onNavigateTab }: Props) {
   })) || [];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="people-dashboard flex flex-col gap-5">
+      <section className="people-dashboard-hero people-dashboard-hero--hr relative overflow-hidden rounded-[22px] px-6 py-6 text-white md:px-8">
+        <div className="relative z-10 max-w-2xl">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-200"><Sparkles size={15} /> People intelligence</div>
+          <h2 className="mt-3 text-2xl font-black tracking-tight md:text-3xl">Keep the team moving with clarity.</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-200">A live pulse of staffing, hiring, attendance, and the people moments that need your attention.</p>
+        </div>
+        <div className="absolute -right-12 -top-20 h-56 w-56 rounded-full border border-white/15" />
+        <div className="absolute -bottom-24 right-24 h-44 w-44 rounded-full border border-teal-200/20" />
+      </section>
       <div className="flex items-center justify-between">
         <span className="text-xs text-slate-500 font-medium">
           Figures aggregated live from database
@@ -76,7 +85,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div className="people-stats-grid people-stagger grid grid-cols-2 gap-3.5 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           label="Total Employees"
           value={data?.totalEmployees ?? 0}
@@ -116,7 +125,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
       </div>
 
       {/* Attendance Today Card */}
-      <div className="card p-4">
+      <div className="people-dashboard-panel card p-4">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
           <div className="flex items-center gap-2">
             <CalendarCheck size={17} className="text-teal-600" />
@@ -162,7 +171,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="card lg:col-span-2">
+        <div className="people-dashboard-panel card lg:col-span-2">
           <div className="card-header">
             <h2 className="card-title">Department-wise Employee Distribution</h2>
           </div>
@@ -185,7 +194,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
           </div>
         </div>
 
-        <div className="card">
+        <div className="people-dashboard-panel card">
           <div className="card-header">
             <h2 className="card-title">Department Summary</h2>
           </div>

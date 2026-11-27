@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GraduationCap, UserCheck, Inbox, Search, Award, CheckCircle2, Clock, RefreshCw, AlertCircle } from 'lucide-react';
+import { GraduationCap, UserCheck, Inbox, Search, Award, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { StatCard, ACCENT } from '../../../components/people';
 import { peopleApi, type InternDashboardData } from '../../../services/peopleApi';
@@ -70,7 +70,16 @@ export default function DashboardTab({ onNavigateTab }: Props) {
     : [{ name: 'Unassigned', count: data?.totalInterns || 0 }];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="people-dashboard flex flex-col gap-5">
+      <section className="people-dashboard-hero people-dashboard-hero--intern relative overflow-hidden rounded-[22px] px-6 py-6 text-white md:px-8">
+        <div className="relative z-10 max-w-2xl">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-100"><Sparkles size={15} /> Intern journey</div>
+          <h2 className="mt-3 text-2xl font-black tracking-tight md:text-3xl">Turn potential into meaningful impact.</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-emerald-50/90">See every application, placement, and learning milestone in one encouraging view.</p>
+        </div>
+        <div className="absolute -right-12 -top-20 h-56 w-56 rounded-full border border-white/15" />
+        <div className="absolute -bottom-24 right-24 h-44 w-44 rounded-full border border-emerald-100/20" />
+      </section>
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-slate-500">
           Real-time figures aggregated directly from PostgreSQL database.
@@ -85,7 +94,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="people-stats-grid people-stagger grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatCard
           label="Total Interns"
           value={data?.totalInterns ?? 0}
@@ -119,7 +128,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <section className="card min-w-0">
+        <section className="people-dashboard-panel card min-w-0">
           <div className="card-header items-start">
             <div>
               <h2 className="card-title">Applications by Selection Stage</h2>
@@ -144,7 +153,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
           </div>
         </section>
 
-        <section className="card min-w-0">
+        <section className="people-dashboard-panel card min-w-0">
           <div className="card-header items-start">
             <div>
               <h2 className="card-title">Interns by Department</h2>

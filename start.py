@@ -4,7 +4,7 @@
 Starts PostgreSQL (Docker, if available), prepares the backend + database, seeds demo
 accounts/data, installs frontend packages, then runs API (:8000) and UI (:5174).
 """
-import os, shutil, subprocess, sys, time, webbrowser
+import os, shutil, socket, subprocess, sys, time, webbrowser
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -50,7 +50,15 @@ def main():
     host = urlparse(db_url.replace("+psycopg", "")).hostname
 
     # 1. Database
-    if shutil.which("docker") and host in ("localhost", "127.0.0.1") and "ngo_app:change-me" in db_url:
+    postgres_listening = False
+    if host in ("localhost", "127.0.0.1"):
+        try:
+            with socket.create_connection((host, 5432), timeout=1):
+                postgres_listening = True
+        except OSError:
+            pass
+
+    if shutil.which("docker") and host in ("localhost", "127.0.0.1") and not postgres_listening:
         step("Starting PostgreSQL (Docker)")
         run(["docker", "compose", "up", "-d", "--wait", "db"], cwd=ROOT)
     else:

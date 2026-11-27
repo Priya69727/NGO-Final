@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Filter, Plus, Search, Users, X } from 'lucide-react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { getProjects } from '../../services/projectApi';
 import { useAuth } from '../../context/AuthContext';
+import { getIndianNationalHolidays } from '../../data/nationalHolidays';
 import {
   peopleApi,
   type Department,
@@ -48,6 +49,39 @@ const dateLabel = (value: string, options: Intl.DateTimeFormatOptions = { month:
   parseDate(value).toLocaleDateString(undefined, options);
 const peopleLabel = (person: PersonOption) => `${person.name} · ${person.type}`;
 const dateBetween = (date: string, from: string, to: string) => date.slice(0, 10) >= from && date.slice(0, 10) <= to;
+
+function calendarEventClass(event: PeopleCalendarEvent) {
+  if (event.eventType === 'Holiday') return 'border-rose-500 bg-rose-100 text-rose-900';
+  if (event.eventType === 'Interview') return 'border-violet-500 bg-violet-100 text-violet-900';
+  if (event.eventType === 'Attendance') {
+    if (event.status === 'Late') return 'border-amber-500 bg-amber-100 text-amber-900';
+    if (event.status === 'Absent') return 'border-rose-500 bg-rose-100 text-rose-900';
+    if (event.status === 'Leave' || event.status === 'Holiday') return 'border-orange-500 bg-orange-100 text-orange-900';
+    return 'border-emerald-500 bg-emerald-100 text-emerald-900';
+  }
+  if (event.eventType === 'Task') {
+    return event.status === 'Overdue' ? 'border-rose-500 bg-rose-100 text-rose-900' : 'border-sky-500 bg-sky-100 text-sky-900';
+  }
+  if (event.eventType === 'Deadline') {
+    return event.status === 'Overdue' ? 'border-rose-500 bg-rose-100 text-rose-900' : 'border-amber-500 bg-amber-100 text-amber-900';
+  }
+  const eventStyles: Record<string, string> = {
+    Community: 'border-teal-500 bg-teal-100 text-teal-900',
+    Fundraiser: 'border-emerald-500 bg-emerald-100 text-emerald-900',
+    Training: 'border-indigo-500 bg-indigo-100 text-indigo-900',
+    Outreach: 'border-green-500 bg-green-100 text-green-900',
+    Meeting: 'border-slate-500 bg-slate-100 text-slate-800',
+  };
+  return eventStyles[event.eventType] ?? 'border-teal-500 bg-teal-100 text-teal-900';
+}
+
+function calendarEventLabel(title: string) {
+  return title
+    .replace(/^DEMO-PEOPLE-\d+\s*[-:]\s*/i, '')
+    .replace(/^(Applications close\s*[·•-]\s*)DEMO\s*[-:]\s*/i, '$1')
+    .replace(/^DEMO\s*[-:]\s*/i, '')
+    .trim();
+}
 
 function getPersonName(personId: string, type: PeopleAssigneeType, people: PersonOption[]) {
   return people.find(person => person.id === personId && person.type === type)?.name ?? 'Unknown person';
@@ -212,7 +246,28 @@ function CalendarView() {
         peopleApi.getInternProfiles({ limit: 200 }),
         peopleApi.getVolunteers({ limit: 200 }),
       ]);
-      setEvents(calendar.items);
+      const fromYear = Number(range.from.slice(0, 4));
+      const toYear = Number(range.to.slice(0, 4));
+      const holidays = Array.from({ length: toYear - fromYear + 1 }, (_, index) => fromYear + index)
+        .flatMap(year => getIndianNationalHolidays(year))
+        .filter(holiday => dateBetween(holiday.date, range.from, range.to))
+        .filter(() => (!typeFilter || typeFilter === 'Holiday') && (!statusFilter || statusFilter === 'Holiday'))
+        .map(holiday => ({
+          id: `holiday:${holiday.date}`,
+          eventType: 'Holiday',
+          title: holiday.name,
+          assignedPerson: null,
+          assignedBy: null,
+          personId: null,
+          personType: null,
+          startDate: holiday.date,
+          dueDate: holiday.date,
+          status: 'Holiday',
+          priority: null,
+          departmentId: null,
+          description: 'Common India public/corporate holiday',
+        }));
+      setEvents([...calendar.items, ...holidays].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setDepartments(departmentResponse.items);
       setPeople([
         ...employeeResponse.items.map(person => ({ id: person.id, type: 'Employee' as const, name: person.fullName, departmentId: person.departmentId })),
@@ -250,13 +305,41 @@ function CalendarView() {
   };
   const eventTypes = [...new Set(events.map(event => event.eventType))].sort();
   const statusOptions = [...new Set(events.map(event => event.status))].sort();
+  const monthSummary = useMemo(() => {
+    const monthStart = localDateKey(new Date(anchor.getFullYear(), anchor.getMonth(), 1, 12));
+    const monthEnd = localDateKey(new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0, 12));
+    const monthEvents = events.filter(event => dateBetween(event.startDate, monthStart, monthEnd));
+    const attendance = monthEvents.filter(event => event.eventType === 'Attendance');
+    const late = attendance.filter(event => event.status === 'Late');
+    const leave = attendance.filter(event => event.status === 'Leave');
+    const uniquePeople = (items: PeopleCalendarEvent[]) => new Set(items.map(event => event.personId ?? event.assignedPerson ?? event.id)).size;
+    return {
+      lateMarks: late.length,
+      latePeople: uniquePeople(late),
+      leaveRecords: leave.length,
+      leavePeople: uniquePeople(leave),
+      interviews: monthEvents.filter(event => event.eventType === 'Interview').length,
+    };
+  }, [anchor, events]);
+  const calendarLegend = [
+      ['border-rose-500 bg-rose-100', 'India public holiday'],
+    ['border-teal-500 bg-teal-100', 'Event'],
+    ['border-violet-500 bg-violet-100', 'Interview'],
+    ['border-sky-500 bg-sky-100', 'Task'],
+    ['border-emerald-500 bg-emerald-100', 'Attendance'],
+    ['border-amber-500 bg-amber-100', 'Deadline'],
+  ];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500"><CalendarDays size={16} /> People schedule</div>
-          <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900">{heading}</h2>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700"><CalendarDays size={15} /> People schedule</div>
+          <div className="mt-1 flex flex-wrap items-baseline gap-3">
+            <h2 className="text-2xl font-black tracking-tight text-slate-900">{heading}</h2>
+            <span className="rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-800">{events.length} scheduled items</span>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">Tasks, attendance, interviews, deadlines, and common India corporate holidays in one view.</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" className="btn-secondary !px-3" onClick={() => setAnchor(new Date())}>Today</button>
@@ -271,7 +354,7 @@ function CalendarView() {
         </div>
       </div>
 
-      <div className="card grid grid-cols-1 gap-3 p-3 md:grid-cols-4">
+      <div className="card grid grid-cols-1 gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_24px_rgba(31,52,72,0.05)] md:grid-cols-4">
         <label className="text-xs font-semibold text-slate-600">Person
           <select className="form-input mt-1" value={personFilter} onChange={event => setPersonFilter(event.target.value)}>
             <option value="">All people</option>
@@ -300,11 +383,12 @@ function CalendarView() {
 
       {error && <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}<button className="ml-3 underline" onClick={() => void load()}>Retry</button></div>}
       {loading ? <div role="status" className="card p-8 text-center text-sm text-slate-500">Loading live People calendar…</div> : (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <section className="card overflow-hidden">
+        <div>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="card overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_30px_rgba(31,52,72,0.06)]">
             {view === 'month' && (
               <>
-                <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                <div className="grid grid-cols-7 border-b border-slate-200 bg-[#f4f8f6] text-center text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => <div key={day} className="py-2">{day}</div>)}
                 </div>
                 <div className="grid grid-cols-7">
@@ -313,14 +397,14 @@ function CalendarView() {
                     const dayEvents = eventsForDate(date);
                     const outside = date.getMonth() !== anchor.getMonth();
                     return (
-                      <div key={key} className={`min-h-[128px] border-b border-r border-slate-100 p-1.5 ${outside ? 'bg-slate-50/70' : ''}`}>
-                        <button className={`mb-1 grid h-7 w-7 place-items-center rounded-full text-xs ${key === today() ? 'bg-teal-700 font-bold text-white' : outside ? 'text-slate-400' : 'text-slate-700'}`} onClick={() => { setAnchor(date); setView('day'); }} aria-label={`View ${key}`}>
+                      <div key={key} className={`min-h-[132px] border-b border-r border-slate-100 p-2 transition-colors hover:bg-teal-50/30 ${outside ? 'bg-slate-50/70' : ''}`}>
+                        <button className={`mb-2 grid h-7 w-7 place-items-center rounded-full text-xs transition ${key === today() ? 'bg-teal-700 font-bold text-white shadow-sm' : outside ? 'text-slate-400 hover:bg-slate-200' : 'text-slate-700 hover:bg-teal-100'}`} onClick={() => { setAnchor(date); setView('day'); }} aria-label={`View ${key}`}>
                           {date.getDate()}
                         </button>
                         <div className="flex flex-col gap-1">
                           {dayEvents.slice(0, 3).map(event => (
-                            <button key={event.id} onClick={() => setSelected(event)} className={`truncate rounded px-1.5 py-1 text-left text-[10px] font-semibold ${event.status === 'Overdue' ? 'bg-rose-100 text-rose-800' : event.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : event.eventType === 'Task' ? 'bg-sky-100 text-sky-800' : event.eventType === 'Attendance' ? 'bg-amber-100 text-amber-900' : 'bg-teal-100 text-teal-900'}`}>
-                              {event.title}
+                            <button key={event.id} onClick={() => setSelected(event)} title={`${event.eventType}: ${event.title}`} className={`truncate rounded-r-md border-l-[3px] px-1.5 py-1 text-left text-[10px] font-semibold transition hover:brightness-95 ${calendarEventClass(event)}`}>
+                              {calendarEventLabel(event.title)}
                             </button>
                           ))}
                           {dayEvents.length > 3 && <button className="px-1 text-left text-[10px] text-slate-500 hover:text-teal-700" onClick={() => { setAnchor(date); setView('day'); }}>+{dayEvents.length - 3} more</button>}
@@ -341,8 +425,8 @@ function CalendarView() {
                       <div className="text-sm font-bold text-slate-700">{date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
                       <div className="flex flex-col gap-2">
                         {dayEvents.map(event => (
-                          <button key={event.id} onClick={() => setSelected(event)} className="flex items-start gap-3 rounded-lg border border-slate-100 p-3 text-left hover:border-teal-300 hover:bg-teal-50/40">
-                            <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${event.status === 'Overdue' ? 'bg-rose-500' : event.status === 'Completed' ? 'bg-emerald-500' : 'bg-teal-600'}`} />
+                          <button key={event.id} onClick={() => setSelected(event)} className={`flex items-start gap-3 border-l-2 p-3 text-left transition hover:brightness-95 ${calendarEventClass(event)}`}>
+                            <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-current" />
                             <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-slate-800">{event.title}</span><span className="mt-1 block text-xs text-slate-500">{event.eventType} · {event.assignedPerson || event.status}</span></span>
                             <span className="text-xs text-slate-500">{event.priority || event.status}</span>
                           </button>
@@ -355,12 +439,12 @@ function CalendarView() {
               </div>
             )}
           </section>
-          <aside className="card h-fit p-4">
+          <aside className="card h-fit rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(31,52,72,0.06)]">
             {selected ? (
               <>
                 <div className="flex items-start justify-between gap-3">
                   <div><p className="text-[11px] font-bold uppercase tracking-wide text-teal-700">{selected.eventType}</p><h3 className="mt-1 text-lg font-extrabold text-slate-900">{selected.title}</h3></div>
-                  <button className="rounded p-1 text-slate-400 hover:bg-slate-100" aria-label="Close event details" onClick={() => setSelected(null)}><X size={16} /></button>
+                  <button className="people-close-button" aria-label="Close event details" title="Close" onClick={() => setSelected(null)}><X size={18} /></button>
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
                   <div><dt className="text-slate-400">Responsible</dt><dd className="mt-1 font-semibold text-slate-700">{selected.assignedPerson || '—'}</dd></div>
@@ -380,12 +464,34 @@ function CalendarView() {
                 <p className="mt-1 text-xs leading-5 text-slate-500">Review its owner, dates, status, and related record here.</p>
               </div>
             )}
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3 text-[10px] font-semibold text-slate-500">
-              <span className="rounded-full bg-rose-100 px-2 py-1 text-rose-800">Overdue</span>
-              <span className="rounded-full bg-sky-100 px-2 py-1 text-sky-800">Upcoming</span>
-              <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-800">Completed</span>
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3 text-[10px] font-semibold text-slate-600">
+              {calendarLegend.map(([className, label]) => <span key={label} className={`border-l-2 px-2 py-1 ${className}`}>{label}</span>)}
             </div>
           </aside>
+          </div>
+          <section className="mt-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(31,52,72,0.05)]" aria-label={`${heading} People summary`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-[#f4f8f6] px-4 py-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal-700">Monthly people summary</p>
+                <p className="mt-1 text-xs text-slate-500">Attendance and interview totals for {heading}.</p>
+              </div>
+              <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-slate-500 shadow-sm">{monthSummary.interviews} interviews</span>
+            </div>
+            <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 sm:grid-cols-4 sm:divide-y-0 lg:grid-cols-5">
+              {[
+                { label: 'Late marks', value: monthSummary.lateMarks, detail: `${monthSummary.latePeople} ${monthSummary.latePeople === 1 ? 'person' : 'people'}`, tone: 'text-amber-700', border: 'border-amber-400' },
+                { label: 'Leave records', value: monthSummary.leaveRecords, detail: `${monthSummary.leavePeople} ${monthSummary.leavePeople === 1 ? 'person' : 'people'}`, tone: 'text-orange-700', border: 'border-orange-400' },
+                { label: 'People late', value: monthSummary.latePeople, detail: 'unique people', tone: 'text-rose-700', border: 'border-rose-400' },
+                { label: 'People on leave', value: monthSummary.leavePeople, detail: 'unique people', tone: 'text-violet-700', border: 'border-violet-400' },
+                { label: 'Interviews', value: monthSummary.interviews, detail: 'scheduled', tone: 'text-teal-700', border: 'border-teal-400' },
+              ].map(metric => (
+                <div key={metric.label} className={`border-t-[3px] ${metric.border} px-4 py-3`}>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{metric.label}</p>
+                  <div className="mt-1 flex items-end gap-2"><span className={`text-2xl font-black ${metric.tone}`}>{metric.value}</span><span className="mb-0.5 text-[10px] text-slate-400">{metric.detail}</span></div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       )}
     </div>
@@ -395,6 +501,7 @@ function CalendarView() {
 function TaskManager({ participantView = false }: { participantView?: boolean }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [tasks, setTasks] = useState<PeopleTask[]>([]);
   const [people, setPeople] = useState<PersonOption[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -488,7 +595,13 @@ function TaskManager({ participantView = false }: { participantView?: boolean })
         {!participantView && <button className="btn-primary flex items-center gap-2" onClick={() => { setEditing(null); setModalOpen(true); }}><Plus size={16} /> Assign task</button>}
       </div>
       <div className={`card grid grid-cols-1 gap-3 p-3 ${participantView ? 'md:grid-cols-3' : 'md:grid-cols-4'}`}>
-        <label className="relative text-xs font-semibold text-slate-600"><span className="sr-only">Search tasks</span><Search className="absolute left-3 top-8 text-slate-400" size={15} /><input className="form-input mt-1 pl-9" placeholder="Search title or description" value={search} onChange={event => setSearch(event.target.value)} /></label>
+        <label className="block text-xs font-semibold text-slate-600">
+          <span className="sr-only">Search tasks</span>
+          <div className="search-control mt-1">
+            <input ref={searchInputRef} className="form-input" placeholder="Search title or description" value={search} onChange={event => setSearch(event.target.value)} />
+            <button type="button" className="search-control-button" aria-label="Focus task search field" onClick={() => searchInputRef.current?.focus()}><Search size={16} aria-hidden /></button>
+          </div>
+        </label>
         <SelectField label="Status" value={status} onChange={setStatus} options={[{ label: 'All statuses', value: '' }, 'Not Started', 'In Progress', 'On Hold', 'Completed', 'Overdue']} />
         <SelectField label="Priority" value={priority} onChange={setPriority} options={[{ label: 'All priorities', value: '' }, 'Low', 'Medium', 'High', 'Critical']} />
         {!participantView && <SelectField label="Department" value={departmentId} onChange={setDepartmentId} options={[{ label: 'All departments', value: '' }, ...departments.map(department => ({ label: department.name, value: department.id }))]} />}
@@ -514,7 +627,7 @@ function TaskManager({ participantView = false }: { participantView?: boolean })
         ) : <div className="p-10 text-center"><Users className="mx-auto text-slate-300" size={24} /><p className="mt-2 text-sm font-bold text-slate-700">No tasks match these filters</p><p className="mt-1 text-xs text-slate-500">Assign a task to start tracking work.</p></div>}
       </div>
       <TaskForm open={modalOpen} onClose={() => setModalOpen(false)} onSave={saveTask} task={editing} people={people} departments={departments} projects={projects} />
-      {historyTask && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4" role="presentation" onClick={() => setHistoryTask(null)}><section role="dialog" aria-modal="true" aria-label="Task history" className="max-h-[80vh] w-full max-w-xl overflow-auto rounded-xl bg-white p-5 shadow-xl" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase text-teal-700">Task history</p><h3 className="mt-1 font-extrabold text-slate-900">{historyTask.title}</h3></div><button onClick={() => setHistoryTask(null)} aria-label="Close history"><X size={18} /></button></div><div className="mt-4 divide-y divide-slate-100">{history.map((item, index) => <div key={`${item.id ?? index}`} className="py-3 text-xs"><p className="font-bold text-slate-700">{item.fieldName} changed by {item.actorName || 'System'}</p><p className="mt-1 text-slate-500">{item.oldValue || '—'} <span className="px-1 text-teal-600">→</span> {item.newValue || '—'}</p><p className="mt-1 text-[10px] text-slate-400">{item.createdAt}</p></div>)}</div>{history.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No changes recorded yet.</p>}</section></div>}
+      {historyTask && <div className="people-window fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4" role="presentation" onClick={() => setHistoryTask(null)}><section role="dialog" aria-modal="true" aria-label="Task history" className="people-dialog-enter max-h-[80vh] w-full max-w-xl overflow-auto rounded-xl bg-white p-5 shadow-xl" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase text-teal-700">Task history</p><h3 className="mt-1 font-extrabold text-slate-900">{historyTask.title}</h3></div><button className="people-close-button" onClick={() => setHistoryTask(null)} aria-label="Close history" title="Close"><X size={18} /></button></div><div className="mt-4 divide-y divide-slate-100">{history.map((item, index) => <div key={`${item.id ?? index}`} className="py-3 text-xs"><p className="font-bold text-slate-700">{item.fieldName} changed by {item.actorName || 'System'}</p><p className="mt-1 text-slate-500">{item.oldValue || '—'} <span className="px-1 text-teal-600">→</span> {item.newValue || '—'}</p><p className="mt-1 text-[10px] text-slate-400">{item.createdAt}</p></div>)}</div>{history.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No changes recorded yet.</p>}</section></div>}
     </div>
   );
 }

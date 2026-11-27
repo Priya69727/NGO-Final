@@ -66,8 +66,8 @@ export default function Reports() {
         <div><label className="form-label" htmlFor="rf">From</label><input id="rf" type="date" className="form-input" value={from} disabled={noDates} onChange={e => setFrom(e.target.value)} /></div>
         <div><label className="form-label" htmlFor="rt">To</label><input id="rt" type="date" className="form-input" value={to} disabled={noDates} onChange={e => setTo(e.target.value)} aria-invalid={!!dateErr} /></div>
         <div className="flex gap-2">
-          <button type="button" className="btn-secondary flex-1 justify-center" onClick={() => window.print()}><Download size={14} /> Print / PDF</button>
-          <button type="button" className="btn-secondary flex-1 justify-center" onClick={() => void exportCsv()}><FileSpreadsheet size={14} /> Excel CSV</button>
+          <button type="button" className="btn-download flex-1 justify-center" onClick={() => window.print()}><Download size={14} /> Print / PDF</button>
+          <button type="button" className="btn-download flex-1 justify-center" onClick={() => void exportCsv()}><FileSpreadsheet size={14} /> Excel CSV</button>
         </div>
         {projectList.data && projectList.data.total === 0 && <p className="text-xs text-amber-600 sm:col-span-2 lg:col-span-5">No projects exist in the database yet, so reports will be empty. Run <code>flask --app wsgi seed-demo</code> for demo data.</p>}
         {projectList.error && <p role="alert" className="text-xs text-red-600 sm:col-span-2 lg:col-span-5">Couldn’t load the project list: {projectList.error}</p>}

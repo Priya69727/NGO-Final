@@ -536,7 +536,7 @@ export default function RecruitmentTab({ departments, requirements, activeRequir
                   href={selectedApplicant.resumeUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="btn-secondary text-xs flex items-center gap-1.5"
+                  className="btn-download text-xs flex items-center gap-1.5"
                 >
                   <Download size={13} /> View Resume
                 </a>
