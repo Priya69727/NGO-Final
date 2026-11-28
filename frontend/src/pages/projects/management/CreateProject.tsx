@@ -12,7 +12,6 @@ import ProgressBar from '../../../components/projects/ProgressBar';
 import ConfirmDialog from '../../../components/projects/ConfirmDialog';
 import EmptyState from '../../../components/projects/EmptyState';
 import FormField, { SelectInput, TextInput } from '../../../components/projects/FormField';
-import RoleSwitcher from '../../../components/projects/RoleSwitcher';
 import { SkeletonTable } from '../../../components/projects/Skeleton';
 import { fmtDate, inr, num, todayISO } from '../../../lib/format';
 import type { ApprovedProposal } from '../../../types/project';
@@ -53,7 +52,7 @@ export default function CreateProject() {
   };
 
   if (!canEdit) return (
-    <div className="card"><EmptyState icon={<Lock size={22} />} title="Only Admins can activate projects" message="Project Managers create proposals and plans; an Admin activates them." action={<div className="flex gap-2 items-center"><RoleSwitcher /><Link to="/projects" className="btn-secondary">Back</Link></div>} /></div>
+    <div className="card"><EmptyState icon={<Lock size={22} />} title="Only Admins can activate projects" message="Project Managers create proposals and plans; an Admin activates them." action={<div className="flex gap-2 items-center"><Link to="/projects" className="btn-secondary">Back</Link></div>} /></div>
   );
   const s = sel?.summary;
 
@@ -61,8 +60,7 @@ export default function CreateProject() {
     <div className="flex flex-col gap-5">
       <div className="page-header !mb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div><h1 className="page-title">Activate Project</h1><p className="page-subtitle">Only approved proposals with a completed Final Project Plan can be activated</p></div>
-        <RoleSwitcher />
-      </div>
+              </div>
 
       <div className="grid xl:grid-cols-5 gap-5">
         <Section className="xl:col-span-2 self-start" title="Approved proposals" flush>

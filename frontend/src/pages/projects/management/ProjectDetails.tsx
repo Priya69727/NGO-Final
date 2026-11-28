@@ -11,7 +11,6 @@ import StageStepper from '../../../components/projects/StageStepper';
 import ConfirmDialog from '../../../components/projects/ConfirmDialog';
 import EditProjectModal from '../../../components/projects/EditProjectModal';
 import EmptyState from '../../../components/projects/EmptyState';
-import RoleSwitcher from '../../../components/projects/RoleSwitcher';
 import { Skeleton, SkeletonBlock } from '../../../components/projects/Skeleton';
 import { SECTOR_BADGE, STAGE_SHORT, progressColor } from '../../../lib/projectUi';
 import { fmtDate, inrCompact } from '../../../lib/format';
@@ -94,8 +93,7 @@ export default function ProjectDetails() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <RoleSwitcher />
-            {canEdit && <>
+                        {canEdit && <>
               <button type="button" className="btn-secondary" onClick={() => go('tasks', 'task')}><CheckSquare size={15} /> Add task</button>
               <button type="button" className="btn-secondary" onClick={() => go('budget', 'expense')}><IndianRupee size={15} /> Log expense</button>
               <button type="button" className="btn-secondary" onClick={() => setEditing(true)}><Edit2 size={15} /> Edit</button>

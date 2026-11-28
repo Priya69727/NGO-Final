@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Archive, Edit2, Eye, FolderKanban, LayoutGrid, List, RotateCcw, Search, X } from 'lucide-react';
+import { Archive, Edit2, Eye, FileText, FolderKanban, LayoutGrid, List, RotateCcw, Rocket, Search, X } from 'lucide-react';
 import { useProjects, useManagers } from '../../../hooks/useProjects';
 import { archiveProject, updateProject } from '../../../services/projectApi';
 import { useRole } from '../../../context/RoleContext';
@@ -12,7 +12,6 @@ import DataTable, { type Column } from '../../../components/projects/DataTable';
 import ConfirmDialog from '../../../components/projects/ConfirmDialog';
 import EmptyState from '../../../components/projects/EmptyState';
 import EditProjectModal from '../../../components/projects/EditProjectModal';
-import RoleSwitcher from '../../../components/projects/RoleSwitcher';
 import { SkeletonCards, SkeletonTable } from '../../../components/projects/Skeleton';
 import { SECTORS } from '../../../data/mockProjects';
 import { SECTOR_BADGE, SDG_NAMES, STAGE_SHORT, progressColor } from '../../../lib/projectUi';
@@ -85,8 +84,10 @@ export default function AllProjects() {
     <div className="flex flex-col gap-5">
       <div className="page-header !mb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div><h1 className="page-title">Projects</h1><p className="page-subtitle">{isAdmin ? 'All projects across every stage — activated by an Admin after approval and planning' : 'Active projects you can follow and monitor'}</p></div>
-        <div className="flex items-center gap-2 flex-wrap"><RoleSwitcher />
-</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link to="/projects/proposals" className="btn-secondary"><FileText size={15} /> New proposal</Link>
+          {isAdmin && <Link to="/projects/activate" className="btn-primary"><Rocket size={15} /> Activate project</Link>}
+        </div>
       </div>
 
       {list.loading && !stats ? <SkeletonCards n={5} /> : (

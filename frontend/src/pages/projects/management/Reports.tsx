@@ -9,7 +9,6 @@ import Async from '../../../components/projects/Async';
 import Section from '../../../components/projects/Section';
 import KpiCard from '../../../components/projects/KpiCard';
 import DataTable from '../../../components/projects/DataTable';
-import RoleSwitcher from '../../../components/projects/RoleSwitcher';
 import { SkeletonBlock } from '../../../components/projects/Skeleton';
 import { fmtDateTime } from '../../../lib/format';
 import type { ReportType } from '../../../types/project';
@@ -53,7 +52,7 @@ export default function Reports() {
     <div className="flex flex-col gap-5">
       <div className="page-header !mb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div><h1 className="page-title">Project Reports</h1><p className="page-subtitle">Generate, preview and export project reports</p></div>
-        <div className="flex gap-2 items-center flex-wrap"><RoleSwitcher /><Link to="/projects" className="btn-secondary">All projects</Link></div>
+        <div className="flex gap-2 items-center flex-wrap"><Link to="/projects" className="btn-secondary">All projects</Link></div>
       </div>
 
       <div className="tab-bar self-start max-w-full overflow-x-auto" role="tablist" aria-label="Report type">
@@ -69,7 +68,7 @@ export default function Reports() {
           <button type="button" className="btn-download flex-1 justify-center" onClick={() => window.print()}><Download size={14} /> Print / PDF</button>
           <button type="button" className="btn-download flex-1 justify-center" onClick={() => void exportCsv()}><FileSpreadsheet size={14} /> Excel CSV</button>
         </div>
-        {projectList.data && projectList.data.total === 0 && <p className="text-xs text-amber-600 sm:col-span-2 lg:col-span-5">No projects exist in the database yet, so reports will be empty. Run <code>flask --app wsgi seed-demo</code> for demo data.</p>}
+        {projectList.data && projectList.data.total === 0 && <p className="text-xs text-amber-600 sm:col-span-2 lg:col-span-5">No projects exist in the database yet, so reports will be empty. Run <code>python scripts/seed_demo.py</code> for demo data.</p>}
         {projectList.error && <p role="alert" className="text-xs text-red-600 sm:col-span-2 lg:col-span-5">Couldn’t load the project list: {projectList.error}</p>}
         {dateErr && <p role="alert" className="text-xs text-red-600 sm:col-span-2 lg:col-span-5">{dateErr}</p>}
         {noDates && <p className="text-[11px] text-slate-400 sm:col-span-2 lg:col-span-5">{TYPES.find(t => t.key === type)!.desc}. Date filters don’t apply to this report.</p>}

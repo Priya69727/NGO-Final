@@ -1,17 +1,15 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
-export default function KpiCard({ label, value, sub, color = '#1AACB8', icon }: { label: string; value: ReactNode; sub?: ReactNode; color?: string; icon?: ReactNode }) {
+export default function KpiCard({ label, value, sub, color = '#2A8C82', icon }: { label: string; value: ReactNode; sub?: ReactNode; color?: string; icon?: ReactNode }) {
   return (
-    <div className="stat-card group" style={{ padding: '18px 20px', backgroundImage: `radial-gradient(120% 140% at 100% 0%, ${color}14 0%, transparent 55%)` }}>
-      <div className="flex items-start justify-between gap-3">
+    <div className="stat-card kpi-tile" style={{ '--kpi-color': color, padding: '16px 18px 16px 22px' } as CSSProperties}>
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500 truncate" style={{ overflowWrap: 'normal' }} title={label}>{label}</div>
-          <div className="text-[26px] leading-tight font-extrabold truncate mt-1.5" style={{ color, fontFamily: 'Nunito, sans-serif' }}>{value}</div>
-          {sub && <div className="text-[11.5px] text-slate-400 mt-1">{sub}</div>}
+          <div className="text-[11.5px] font-bold uppercase tracking-wide text-slate-500">{label}</div>
+          <div className="mt-1 truncate text-[26px] font-extrabold leading-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Nunito, sans-serif' }}>{value}</div>
+          {sub && <div className="mt-0.5 text-[11.5px] text-slate-400">{sub}</div>}
         </div>
-        {icon && (
-          <div className="p-2.5 rounded-xl flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3" style={{ background: `linear-gradient(135deg, ${color}26, ${color}0F)`, color, boxShadow: `inset 0 0 0 1px ${color}22` }}>{icon}</div>
-        )}
+        {icon && <div className="kpi-tile-icon" style={{ background: `${color}1F`, color }}>{icon}</div>}
       </div>
     </div>
   );

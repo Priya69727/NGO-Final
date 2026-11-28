@@ -1,38 +1,14 @@
 import { useEffect, useRef, useState } from "react"
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import {
-  LayoutDashboard,
   Home,
-  FolderKanban,
   CalendarDays,
-  Users,
-  Heart,
-  DollarSign,
-  BarChart3,
-  MessageSquare,
-  Settings,
   ChevronDown,
   ChevronRight,
   Bell,
   Search,
-  UserCircle,
   Menu,
   X,
-  Gift,
-  Target,
-  Warehouse,
-  FileText,
-  BookUser,
-  Briefcase,
-  GraduationCap,
-  UserCheck,
-  Star,
-  TrendingUp,
-  Building2,
-  Rocket,
-  FileBarChart,
-  HeartHandshake,
-  UsersRound,
   LogOut,
   Sun,
   Moon,
@@ -47,13 +23,10 @@ import { useAuth } from "../context/AuthContext"
 import usePersistentState from "../hooks/usePersistentState"
 import { apiRequest } from "../services/apiClient"
 import { canAccess } from "../lib/access"
-
-interface NavItem {
-  label: string
-  icon: React.ReactNode
-  path?: string
-  children?: { label: string; path: string; icon?: React.ReactNode }[]
-}
+import { navConfig, resolveLocation, type NavItem } from "../lib/navConfig"
+import ChartGradients from "./ChartGradients"
+import CommandSearch from "./CommandSearch"
+import ModuleFlow from "./ModuleFlow"
 
 interface DashboardReminders {
   upcomingEvents: { title: string; date: string; location: string; type: string }[]
@@ -68,226 +41,6 @@ interface Reminder {
   important: boolean
 }
 
-const navConfig: NavItem[] = [
-  {
-    label: "Dashboard",
-    icon: <LayoutDashboard size={17} />,
-    path: "/dashboard",
-  },
-  {
-    label: "Projects",
-    icon: <FolderKanban size={17} />,
-    children: [
-      {
-        label: "All Projects",
-        path: "/projects",
-        icon: <FolderKanban size={14} />,
-      },
-      {
-        label: "Activate",
-        path: "/projects/activate",
-        icon: <Rocket size={14} />,
-      },
-      {
-        label: "Project Reports",
-        path: "/projects/reports",
-        icon: <FileBarChart size={14} />,
-      },
-      {
-        label: "Proposals",
-        path: "/projects/proposals",
-        icon: <FileText size={14} />,
-      },
-      {
-        label: "Planning",
-        path: "/projects/planning",
-        icon: <Target size={14} />,
-      },
-    ],
-  },
-  {
-    label: "Events",
-    icon: <CalendarDays size={17} />,
-    children: [
-      {
-        label: "All Events",
-        path: "/events",
-        icon: <CalendarDays size={14} />,
-      },
-      {
-        label: "Calendar",
-        path: "/events/calendar",
-        icon: <CalendarDays size={14} />,
-      },
-    ],
-  },
-  { label: "Beneficiaries", icon: <Heart size={17} />, path: "/beneficiaries" },
-  {
-    label: "Resources & Budget",
-    icon: <Warehouse size={17} />,
-    path: "/resources",
-  },
-  {
-    label: "Occasions",
-    icon: <Gift size={17} />,
-    children: [
-      {
-        label: "Calendar",
-        path: "/occasions",
-        icon: <CalendarDays size={14} />,
-      },
-      { label: "Engagement", path: "/engagement", icon: <Target size={14} /> },
-      { label: "Outcomes", path: "/outcomes", icon: <TrendingUp size={14} /> },
-    ],
-  },
-  {
-    label: "Reports",
-    icon: <BarChart3 size={17} />,
-    children: [
-      { label: "Analytics", path: "/reports", icon: <BarChart3 size={14} /> },
-      {
-        label: "Department",
-        path: "/reports/department",
-        icon: <Building2 size={14} />,
-      },
-    ],
-  },
-  {
-    label: "Communication",
-    icon: <MessageSquare size={17} />,
-    path: "/communication",
-  },
-  {
-    label: "Birthday Project",
-    icon: <Gift size={17} />,
-    children: [
-      {
-        label: "Overview",
-        path: "/birthday-project/dashboard",
-        icon: <LayoutDashboard size={14} />,
-      },
-      {
-        label: "Profiles",
-        path: "/birthday-project/profiles",
-        icon: <Users size={14} />,
-      },
-      {
-        label: "Occasions",
-        path: "/birthday-project/occasions",
-        icon: <CalendarDays size={14} />,
-      },
-      {
-        label: "Engagement",
-        path: "/birthday-project/engagement",
-        icon: <MessageSquare size={14} />,
-      },
-      {
-        label: "Outcomes",
-        path: "/birthday-project/outcomes",
-        icon: <TrendingUp size={14} />,
-      },
-      {
-        label: "Departments & RBAC",
-        path: "/birthday-project/departments",
-        icon: <Building2 size={14} />,
-      },
-      {
-        label: "Reports",
-        path: "/birthday-project/reports",
-        icon: <BarChart3 size={14} />,
-      },
-      {
-        label: "Action Workspace",
-        path: "/birthday-project/action-workspace",
-        icon: <Target size={14} />,
-      },
-    ],
-  },
-  {
-    label: "Donor Management",
-    icon: <HeartHandshake size={17} />,
-    children: [
-      {
-        label: "Dashboard",
-        path: "/donor-management/admin/dashboard",
-        icon: <LayoutDashboard size={14} />,
-      },
-      {
-        label: "Directory",
-        path: "/donor-management/admin/directory",
-        icon: <BookUser size={14} />,
-      },
-      {
-        label: "Contributions",
-        path: "/donor-management/admin/contributions",
-        icon: <DollarSign size={14} />,
-      },
-      {
-        label: "Campaigns",
-        path: "/donor-management/admin/campaigns",
-        icon: <Star size={14} />,
-      },
-      {
-        label: "Communications",
-        path: "/donor-management/admin/communications",
-        icon: <MessageSquare size={14} />,
-      },
-      {
-        label: "Follow-Up",
-        path: "/donor-management/admin/followup",
-        icon: <Target size={14} />,
-      },
-      {
-        label: "Reports",
-        path: "/donor-management/admin/reports",
-        icon: <BarChart3 size={14} />,
-      },
-    ],
-  },
-  {
-    label: "People Management",
-    icon: <UsersRound size={17} />,
-    children: [
-      {
-        label: "Overview",
-        path: "/people-management",
-        icon: <UsersRound size={14} />,
-      },
-      {
-        label: "People Calendar",
-        path: "/people-management/calendar",
-        icon: <CalendarDays size={14} />,
-      },
-      {
-        label: "People Tasks",
-        path: "/people-management/tasks",
-        icon: <Check size={14} />,
-      },
-      {
-        label: "Attendance Overview",
-        path: "/people-management/attendance",
-        icon: <CalendarClock size={14} />,
-      },
-      {
-        label: "HR Management",
-        path: "/people-management/hr",
-        icon: <Briefcase size={14} />,
-      },
-      {
-        label: "Interns",
-        path: "/people-management/interns",
-        icon: <GraduationCap size={14} />,
-      },
-      {
-        label: "Volunteers",
-        path: "/people-management/volunteers",
-        icon: <UserCheck size={14} />,
-      },
-    ],
-  },
-  { label: "Admin & Settings", icon: <Settings size={17} />, path: "/admin" },
-]
-
 function NavGroup({ item: rawItem, collapsed }: { item: NavItem; collapsed: boolean }) {
   const location = useLocation()
   const { user } = useAuth()
@@ -298,7 +51,10 @@ function NavGroup({ item: rawItem, collapsed }: { item: NavItem; collapsed: bool
   const isAnyChildActive =
     item.children?.some((c) => location.pathname.startsWith(c.path)) ?? false
   const isEnd = (path: string) =>
-    path === "/projects" || path === "/people-management"
+    path === "/projects" ||
+    path === "/people-management" ||
+    path === "/events" ||
+    path === "/reports"
   const [open, setOpen] = useState(isAnyChildActive)
   if (item.children ? item.children.length === 0 : !canAccess(user?.role, item.path ?? "")) return null
 
@@ -329,7 +85,7 @@ function NavGroup({ item: rawItem, collapsed }: { item: NavItem; collapsed: bool
         aria-expanded={open}
         aria-label={collapsed ? item.label : undefined}
         className={`sidebar-nav-item w-full ${
-          isAnyChildActive ? "active" : ""
+          isAnyChildActive ? "has-active" : ""
         }`}
         title={collapsed ? item.label : undefined}
       >
@@ -388,11 +144,29 @@ export default function Layout() {
   const navigate = useNavigate()
   const isOps = user?.role === "Admin" || user?.role === "Project Manager" || user?.role === "Staff"
   const headerActionsRef = useRef<HTMLDivElement>(null)
-  const globalSearchRef = useRef<HTMLInputElement>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      const typing =
+        !!target &&
+        (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault()
+        setSearchOpen(true)
+      } else if (event.key === "/" && !typing) {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    document.addEventListener("keydown", onShortcut)
+    return () => document.removeEventListener("keydown", onShortcut)
+  }, [])
 
   useEffect(() => {
     const closeMenus = (event: MouseEvent) => {
@@ -487,35 +261,25 @@ export default function Layout() {
     return () => window.removeEventListener("ngo:notify", handleNotice)
   }, [])
 
-  const currentTitle = (() => {
-    if (location.pathname === "/projects/activate")
-      return "Activate Project"
-    if (
-      location.pathname.startsWith("/projects/") &&
-      !location.pathname.startsWith("/projects/activate")
-    )
-      return "Project Details"
-
-    if (location.pathname === "/home") return "My Workspace"
-    if (location.pathname.startsWith("/people-management")) {
-      if (location.pathname.endsWith("/calendar")) return "People Calendar"
-      if (location.pathname.endsWith("/tasks")) return "People Tasks"
-      if (location.pathname.endsWith("/attendance")) return "People Attendance"
-      return "People Management"
-    }
-    let best: { label: string; len: number } | null = null
-    for (const item of navConfig) {
-      if (item.path && location.pathname === item.path) return item.label
-      for (const c of item.children ?? []) {
-        if (
-          location.pathname.startsWith(c.path) &&
-          (!best || c.path.length > best.len)
-        )
-          best = { label: c.label, len: c.path.length }
+  const crumbs: { label: string; to?: string }[] = (() => {
+    const path = location.pathname
+    if (path === "/home") return [{ label: "My Workspace" }]
+    const resolved = resolveLocation(path)
+    if (!resolved) return [{ label: "Hope Foundation" }]
+    if (!resolved.group) return [{ label: resolved.leaf }]
+    const trail: { label: string; to?: string }[] = [
+      { label: resolved.group.label },
+    ]
+    const childPath = resolved.child!.path
+    if (path === "/projects/activate" || path.startsWith("/projects/")) {
+      // Project detail pages sit under "All Projects"
+      if (path !== "/projects/activate" && !["/projects/reports", "/projects/proposals", "/projects/planning"].includes(path)) {
+        trail.push({ label: "All Projects", to: "/projects" }, { label: "Project Details" })
+        return trail
       }
     }
-
-    return best?.label ?? "Hope Foundation"
+    trail.push({ label: resolved.leaf, to: path === childPath ? undefined : childPath })
+    return trail
   })()
 
   return (
@@ -619,43 +383,49 @@ export default function Layout() {
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          <div className="min-w-0 flex-1">
-            <h1
-              className="truncate text-base font-bold text-slate-800"
-              style={{ fontFamily: "Nunito, sans-serif" }}
-            >
-              {currentTitle}
-            </h1>
-            <p className="hidden truncate text-[11px] text-slate-400 sm:block">
-              Hope Foundation NGO Management System
-            </p>
-          </div>
+          <nav className="breadcrumb min-w-0 flex-1" aria-label="Breadcrumb">
+            {crumbs.map((crumb, index) => {
+              const last = index === crumbs.length - 1
+              return (
+                <span key={`${crumb.label}-${index}`} className="inline-flex min-w-0 items-center gap-1.5">
+                  {index > 0 && (
+                    <ChevronRight size={13} aria-hidden className={index === 1 ? "hidden sm:block" : ""} />
+                  )}
+                  {last ? (
+                    <span className="crumb-current" aria-current="page">{crumb.label}</span>
+                  ) : crumb.to ? (
+                    <Link to={crumb.to}>{crumb.label}</Link>
+                  ) : (
+                    <span className={index === 0 && crumbs.length > 1 ? "hidden sm:inline" : ""}>{crumb.label}</span>
+                  )}
+                </span>
+              )
+            })}
+          </nav>
 
           <div
             ref={headerActionsRef}
             className="relative flex shrink-0 items-center gap-1 sm:gap-2"
           >
-            <div className="search-control hidden w-52 lg:flex">
-              <input
-                ref={globalSearchRef}
-                type="text"
-                placeholder="Search..."
-                aria-label="Search"
-                className="form-input text-sm"
-              />
-              <button
-                type="button"
-                className="search-control-button"
-                aria-label="Focus search field"
-                title="Search"
-                onClick={() => globalSearchRef.current?.focus()}
-              >
-                <Search size={16} aria-hidden />
-              </button>
-            </div>
-            <span className="hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 md:inline-flex">
-              {user?.role}
-            </span>
+            <button
+              type="button"
+              className="command-trigger"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search pages"
+            >
+              <Search size={15} aria-hidden />
+              <span>Search pages…</span>
+              <kbd>Ctrl K</kbd>
+            </button>
+            <button
+              type="button"
+              className="header-icon-button lg:!hidden"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search pages"
+              title="Search pages"
+            >
+              <Search size={18} />
+            </button>
             <button
               type="button"
               onClick={toggleNotifications}
@@ -663,7 +433,7 @@ export default function Layout() {
                 unreadCount ? `, ${unreadCount} unread` : ""
               }`}
               aria-expanded={notificationsOpen}
-              className="header-icon-button relative rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              className="header-icon-button relative"
             >
               <Bell size={18} />
               {unreadCount > 0 && (
@@ -679,7 +449,7 @@ export default function Layout() {
                 theme === "light" ? "dark" : "light"
               } mode`}
               title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-              className="header-icon-button rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              className="header-icon-button"
             >
               {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
             </button>
@@ -691,10 +461,20 @@ export default function Layout() {
               }}
               aria-label="Open user profile"
               aria-expanded={profileOpen}
-              className="profile-trigger flex h-9 w-9 items-center justify-center rounded-full"
-              style={{ background: "#1AACB8" }}
+              className="profile-trigger"
             >
-              <UserCircle size={19} className="text-white" />
+              <span className="profile-trigger-avatar" aria-hidden="true">
+                {(user?.fullName ?? "U")
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((part) => part[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+              <span className="profile-trigger-text">
+                <strong>{user?.fullName || "User"}</strong>
+                <small>{user?.role}</small>
+              </span>
             </button>
 
             {profileOpen && (
@@ -847,7 +627,7 @@ export default function Layout() {
                     navigate("/")
                   }}
                 >
-                  View dashboard
+                  {user?.role === "Volunteer" || user?.role === "Board" ? "Open my workspace" : "Open dashboard"}
                 </button>
               </section>
             )}
@@ -855,7 +635,7 @@ export default function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="app-content min-w-0 flex-1 overflow-y-auto p-5">
+        <main className="app-content min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
           {notice && (
             <div
               role="status"
@@ -865,8 +645,11 @@ export default function Layout() {
               {notice}
             </div>
           )}
+          <ModuleFlow />
           <Outlet />
         </main>
+        <ChartGradients />
+        <CommandSearch open={searchOpen} onClose={() => setSearchOpen(false)} role={user?.role} />
       </div>
     </div>
   )

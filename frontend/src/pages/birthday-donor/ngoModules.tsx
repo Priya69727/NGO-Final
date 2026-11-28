@@ -571,7 +571,7 @@ export function BirthdayProjectOccasions() {
     <div className="flex flex-col gap-5">
       <div className="page-header flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="page-title">Occasions & Calendar</h1>
+          <h1 className="page-title">Birthday Occasions & Calendar</h1>
           <p className="page-subtitle">Birthdays, anniversaries, greeting templates, and multi-channel celebration reminders</p>
         </div>
         <button className="btn-primary text-sm" onClick={() => setShowAddOccasion(true)}><Plus size={15} /> Add Occasion</button>
@@ -758,7 +758,7 @@ export function BirthdayProjectEngagement() {
     <div className="flex flex-col gap-5">
       <div className="page-header flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="page-title">Engagement & Actions</h1>
+          <h1 className="page-title">Birthday Engagement & Actions</h1>
           <p className="page-subtitle">Volunteer & staff task cards, outreach assignments, action workspaces, and offline field tracking</p>
         </div>
         <button className="btn-primary text-sm" onClick={() => setShowAddTask(true)}><Plus size={15} /> Add Task Card</button>
@@ -901,7 +901,7 @@ export function BirthdayProjectOutcomes() {
     <div className="flex flex-col gap-5">
       <div className="page-header flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="page-title">Outcomes & Conversion</h1>
+          <h1 className="page-title">Birthday Outcomes & Conversion</h1>
           <p className="page-subtitle">Tracking celebration touchpoint conversions, donor response, pledged funds, and impact reports</p>
         </div>
         <button className="btn-primary text-sm" onClick={() => setShowAddPledge(true)}><Plus size={15} /> Record Pledge</button>
