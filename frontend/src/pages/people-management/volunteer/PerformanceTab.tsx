@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Star } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { BAR_RADIUS, ChartGradients, gradientUrl } from '../../../lib/chartTheme';
 import { Avatar, DataTable, EmptyState, ProgressBar, SelectField, TextAreaField, ACCENT, type Column } from '../../../components/people';
 import RatingReviewForm from '../../../components/people/RatingReviewForm';
 import type { Volunteer } from './data';
@@ -21,7 +22,7 @@ export default function PerformanceTab({ volunteers, onFeedback, onRate }: { vol
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="card overflow-hidden xl:col-span-2"><div className="card-header"><h2 className="card-title">Task Completion & Hours</h2></div><DataTable columns={cols} rows={volunteers} rowKey={v => v.id} onRowClick={v => setSelId(v.id)} /></div>
         <div className="card"><div className="card-header"><h2 className="card-title">Hours Contributed</h2></div><div className="card-body" style={{ height: 280 }}>
-          <ResponsiveContainer width="100%" height="100%"><BarChart data={chart}><CartesianGrid strokeDasharray="3 3" stroke="#E8EEF4" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="hours" fill="#1AACB8" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div></div>
+          <ResponsiveContainer width="100%" height="100%"><BarChart data={chart}><ChartGradients keys={['cyan']} /><CartesianGrid strokeDasharray="3 3" stroke="#E8EEF4" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="hours" fill={gradientUrl('cyan')} radius={BAR_RADIUS} maxBarSize={44} /></BarChart></ResponsiveContainer></div></div>
       </div>
       <div className="card"><div className="card-header"><h2 className="card-title">Feedback & Performance History</h2></div>
         <div className="card-body grid grid-cols-1 lg:grid-cols-2 gap-6">

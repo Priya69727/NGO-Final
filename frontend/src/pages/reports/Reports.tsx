@@ -167,8 +167,8 @@ export default function ReportsPage() {
                     <XAxis type="number" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                     <YAxis dataKey="dept" type="category" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={80} />
                     <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                    <Bar dataKey="total" fill="#F1F5F9" radius={[0, 3, 3, 0]} name="Total" />
-                    <Bar dataKey="completed" fill="#1AACB8" radius={[0, 3, 3, 0]} name="Completed" />
+                    <Bar dataKey="total" fill="#F1F5F9" radius={[0, 8, 8, 0]} name="Total" />
+                    <Bar dataKey="completed" fill="#1AACB8" radius={[0, 8, 8, 0]} name="Completed" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -184,8 +184,8 @@ export default function ReportsPage() {
                   <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
                   <Legend />
-                  <Line type="monotone" dataKey="beneficiaries" stroke="#1AACB8" strokeWidth={2.5} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="volunteers" stroke="#6366F1" strokeWidth={2.5} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="beneficiaries" stroke="#1AACB8" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 7 }} />
+                  <Line type="monotone" dataKey="volunteers" stroke="#6366F1" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 7 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

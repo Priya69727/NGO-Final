@@ -36,7 +36,7 @@ export default function ImpactTab({ project: p, reload }: TabProps) {
             <Section className="lg:col-span-2" title="Target vs Achieved (% of KPI target)" action={canEdit && <button type="button" className="btn-primary" onClick={() => setAdding(true)}><Plus size={15} /> Add impact entry</button>}>
               <div className="h-72" role="img" aria-label="KPI achievement versus target"><ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chart} margin={{ bottom: 30 }}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={60} /><YAxis unit="%" tick={{ fontSize: 11 }} /><Tooltip /><Legend verticalAlign="top" />
-                  <Bar dataKey="Target" fill="#E2E8F0" radius={[4, 4, 0, 0]} /><Bar dataKey="Achieved" fill="#1AACB8" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
+                  <Bar dataKey="Target" fill="#E2E8F0" radius={[8, 8, 0, 0]} /><Bar dataKey="Achieved" fill="#1AACB8" radius={[8, 8, 0, 0]} /></BarChart></ResponsiveContainer></div>
             </Section>
             <Section title="Beneficiary counts">
               <div className="flex flex-col gap-5">

@@ -143,7 +143,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
                 <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
                 <YAxis type="category" dataKey="stage" width={110} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569' }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} applicants`, 'Volume']} cursor={{ fill: '#F2F7F5' }} />
-                <Bar dataKey="count" name="Applicants" radius={[0, 5, 5, 0]} maxBarSize={28}>
+                <Bar dataKey="count" name="Applicants" radius={[0, 8, 8, 0]} maxBarSize={26}>
                   {stageData.map((stage, i) => (
                     <Cell key={stage.stage} fill={stage.fill || COLORS[i % COLORS.length]} />
                   ))}
@@ -168,7 +168,7 @@ export default function DashboardTab({ onNavigateTab }: Props) {
                 <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
                 <YAxis type="category" dataKey="name" width={120} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569' }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} interns`, 'Count']} cursor={{ fill: '#F2F7F5' }} />
-                <Bar dataKey="count" name="Interns" fill={ACCENT.intern} radius={[0, 5, 5, 0]} maxBarSize={28} />
+                <Bar dataKey="count" name="Interns" fill={ACCENT.intern} radius={[0, 8, 8, 0]} maxBarSize={26} />
               </BarChart>
             </ResponsiveContainer>
           </div>

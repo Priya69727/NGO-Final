@@ -61,7 +61,7 @@ export default function BudgetTab({ project: p, reload, quick, onQuickHandled }:
             <div className="grid lg:grid-cols-3 gap-5 mt-5">
               <div className="lg:col-span-2 h-64" role="img" aria-label="Planned versus actual spend by section">
                 <ResponsiveContainer width="100%" height="100%"><BarChart data={bar}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 12 }} /><YAxis tickFormatter={v => inrCompact(Number(v))} tick={{ fontSize: 11 }} width={70} />
-                  <Tooltip formatter={v => inr(Number(v))} /><Legend /><Bar dataKey="planned" name="Planned" fill="#CBD5E1" radius={[4, 4, 0, 0]} /><Bar dataKey="actual" name="Actual" fill="#1AACB8" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+                  <Tooltip formatter={v => inr(Number(v))} /><Legend /><Bar dataKey="planned" name="Planned" fill="#CBD5E1" radius={[8, 8, 0, 0]} /><Bar dataKey="actual" name="Actual" fill="#1AACB8" radius={[8, 8, 0, 0]} /></BarChart></ResponsiveContainer>
               </div>
               <div className="h-64" role="img" aria-label="Spend split by section">
                 {s.spent === 0 ? <div className="h-full flex items-center justify-center text-sm text-slate-400">No spend recorded yet</div> :

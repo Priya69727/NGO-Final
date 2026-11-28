@@ -5,6 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
+import { BAR_RADIUS, ChartGradients, gradientUrl } from '../../lib/chartTheme';
 import {
   CalendarDays, Cake, CheckCircle2, CircleDollarSign, FileText,
   Gift, HeartHandshake, MessageSquare, Sparkles, Target, TrendingUp,
@@ -912,11 +913,12 @@ export function BirthdayProjectOutcomes() {
           <div className="card-body">
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={funnel}>
+                <ChartGradients keys={['cyan']} />
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip />
-                <Bar dataKey="value" fill="#1AACB8" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill={gradientUrl('cyan')} radius={BAR_RADIUS} maxBarSize={56} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -927,7 +929,7 @@ export function BirthdayProjectOutcomes() {
           <div className="card-body">
             <ResponsiveContainer width="100%" height={230}>
               <PieChart>
-                <Pie data={revenueByCategory} dataKey="value" innerRadius={42} outerRadius={85} paddingAngle={4}>
+                <Pie data={revenueByCategory} dataKey="value" innerRadius={48} outerRadius={85} paddingAngle={5} cornerRadius={6}>
                   {revenueByCategory.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
                 </Pie>
                 <Tooltip />
@@ -1713,7 +1715,7 @@ export function DonorManagementAdminDashboard() {
           <div className="card-body">
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={donorSegments} dataKey="value" innerRadius={36} outerRadius={86} paddingAngle={4}>
+                <Pie data={donorSegments} dataKey="value" innerRadius={44} outerRadius={86} paddingAngle={5} cornerRadius={6}>
                   {donorSegments.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
                 </Pie>
                 <Tooltip />

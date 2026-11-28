@@ -8,7 +8,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = 'Co
     <Modal open={open} title={title} onClose={onCancel} size="sm"
       footer={<>
         <button type="button" className="btn-secondary" onClick={onCancel} disabled={busy}>Cancel</button>
-        <button type="button" className="btn-primary" style={danger ? { background: '#EF4444' } : undefined} onClick={onConfirm} disabled={busy}>{busy ? 'Please wait…' : confirmLabel}</button>
+        <button type="button" className={danger ? 'btn-danger' : 'btn-primary'} onClick={onConfirm} disabled={busy}>{busy ? 'Please wait…' : confirmLabel}</button>
       </>}>
       <div className="text-sm text-slate-600">{message}</div>
     </Modal>

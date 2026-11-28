@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Users, UserCheck, UserX, Building2, ClipboardList, Clock, CalendarCheck, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { BAR_RADIUS, ChartGradients, gradientUrl } from '../../../lib/chartTheme';
 import { StatCard, ACCENT } from '../../../components/people';
 import { peopleApi, type HrDashboardData } from '../../../services/peopleApi';
 
@@ -179,11 +180,12 @@ export default function DashboardTab({ onNavigateTab }: Props) {
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
+                  <ChartGradients keys={['teal']} />
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#718096' }} interval={0} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#718096' }} />
                   <Tooltip labelFormatter={(_, p) => p?.[0]?.payload.full ?? ''} />
-                  <Bar dataKey="count" name="Staff Members" fill="#2A8C82" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="count" name="Staff Members" fill={gradientUrl('teal')} radius={BAR_RADIUS} maxBarSize={44} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

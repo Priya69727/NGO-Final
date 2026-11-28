@@ -21,7 +21,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="fixed bottom-4 right-4 z-[70] flex flex-col gap-2 max-w-[calc(100vw-2rem)]" aria-live="polite" role="status">
         {items.map(t => (
-          <div key={t.id} className="card flex items-start gap-2 px-3 py-2.5 w-80 max-w-full" style={{ boxShadow: '0 8px 24px rgba(15,23,42,0.15)' }}>
+          <div key={t.id} className="card modal-panel-modern flex items-start gap-3 px-4 py-3 w-80 max-w-full" style={{ borderRadius: 16, boxShadow: '0 12px 32px rgba(15,23,42,0.18)' }}>
             <span className="mt-0.5">{ICON[t.kind]}</span>
             <span className="text-[13px] text-slate-700 flex-1">{t.message}</span>
             <button type="button" aria-label="Dismiss" onClick={() => dismiss(t.id)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>

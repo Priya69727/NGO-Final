@@ -33,14 +33,14 @@ export default function Modal({ open, title, onClose, children, footer, size = '
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`card w-full ${W[size]} max-h-[90vh] flex flex-col`}>
+    <div className="modal-backdrop-modern fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/45" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby={titleId} className={`card modal-panel-modern w-full ${W[size]} max-h-[90vh] flex flex-col`}>
         <div className="card-header">
           <h2 id={titleId} className="card-title">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close dialog" className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X size={18} /></button>
+          <button type="button" onClick={onClose} aria-label="Close dialog" className="p-2 rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"><X size={18} /></button>
         </div>
         <div className="card-body overflow-y-auto">{children}</div>
-        {footer && <div className="px-5 py-3 border-t border-slate-100 flex justify-end gap-2 flex-wrap">{footer}</div>}
+        {footer && <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2 flex-wrap bg-slate-50/60 rounded-b-[22px]">{footer}</div>}
       </div>
     </div>
   );

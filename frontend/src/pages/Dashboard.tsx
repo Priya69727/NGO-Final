@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import {
   AreaChart,
   Area,
+  CartesianGrid,
   BarChart,
   Bar,
   PieChart,
@@ -14,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
+import { AXIS, BAR_RADIUS, ChartGradients, GRID, gradientUrl } from "../lib/chartTheme"
 import {
   FolderKanban,
   Users,
@@ -692,17 +694,16 @@ export default function Dashboard() {
                           </linearGradient>
                         </defs>
 
+                        <CartesianGrid {...GRID} />
                         <XAxis
                           dataKey="label"
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                         />
 
                         <YAxis
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                           tickFormatter={(value) =>
                             `₹${(value / 1000).toFixed(0)}k`
                           }
@@ -713,11 +714,6 @@ export default function Dashboard() {
                             formatCurrency(Number(value)),
                             "Donations",
                           ]}
-                          contentStyle={{
-                            borderRadius: 12,
-                            border: "1px solid #E2E8F0",
-                            fontSize: 12,
-                          }}
                         />
 
                         <Area
@@ -726,7 +722,8 @@ export default function Dashboard() {
                           stroke="#0D9488"
                           strokeWidth={3}
                           fill="url(#tealGrad)"
-                          activeDot={{ r: 6 }}
+                          dot={false}
+                          activeDot={{ r: 7, strokeWidth: 3 }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -757,9 +754,10 @@ export default function Dashboard() {
                             data={dashboard.projectStatus}
                             cx="50%"
                             cy="50%"
-                            innerRadius={48}
-                            outerRadius={75}
-                            paddingAngle={4}
+                            innerRadius={52}
+                            outerRadius={78}
+                            paddingAngle={5}
+                            cornerRadius={6}
                             dataKey="value"
                           >
                             {dashboard.projectStatus.map((entry, index) => (
@@ -769,12 +767,7 @@ export default function Dashboard() {
                               />
                             ))}
                           </Pie>
-                          <Tooltip
-                            contentStyle={{
-                              borderRadius: 10,
-                              fontSize: 12,
-                            }}
-                          />
+                          <Tooltip />
                         </PieChart>
                       </ResponsiveContainer>
 
@@ -829,27 +822,22 @@ export default function Dashboard() {
                         data={dashboard.volunteerActivity}
                         barSize={30}
                       >
+                        <ChartGradients keys={["teal"]} />
+                        <CartesianGrid {...GRID} />
                         <XAxis
                           dataKey="dept"
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                         />
                         <YAxis
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                         />
-                        <Tooltip
-                          contentStyle={{
-                            borderRadius: 10,
-                            fontSize: 12,
-                          }}
-                        />
+                        <Tooltip />
                         <Bar
                           dataKey="assignments"
-                          fill="#0D9488"
-                          radius={[7, 7, 0, 0]}
+                          fill={gradientUrl("teal")}
+                          radius={BAR_RADIUS}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -1389,17 +1377,16 @@ export default function Dashboard() {
                           </linearGradient>
                         </defs>
 
+                        <CartesianGrid {...GRID} />
                         <XAxis
                           dataKey="label"
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                         />
 
                         <YAxis
-                          tick={{ fontSize: 11, fill: "#94A3B8" }}
-                          axisLine={false}
-                          tickLine={false}
+                          tick={{ fontSize: 11 }}
+                          {...AXIS}
                           tickFormatter={(value) =>
                             `₹${(value / 1000).toFixed(0)}k`
                           }

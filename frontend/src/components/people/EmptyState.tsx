@@ -3,8 +3,11 @@ import { Inbox } from 'lucide-react';
 
 export default function EmptyState({ title = 'Nothing here yet', hint, action }: { title?: string; hint?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-12 px-4">
-      <div className="p-3 rounded-full bg-slate-100 text-slate-400 mb-3"><Inbox size={20} /></div>
+    <div className="flex flex-col items-center justify-center text-center py-14 px-4">
+      <div className="relative mb-4">
+        <div className="absolute inset-0 rounded-3xl bg-teal-500/15 blur-xl" aria-hidden />
+        <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-teal-600" style={{ background: 'linear-gradient(135deg, rgba(42,140,130,0.16), rgba(42,140,130,0.05))', boxShadow: 'inset 0 0 0 1px rgba(42,140,130,0.2)' }}><Inbox size={24} /></div>
+      </div>
       <div className="text-sm font-semibold text-slate-700">{title}</div>
       {hint && <div className="text-xs text-slate-500 mt-1 max-w-xs">{hint}</div>}
       {action && <div className="mt-4">{action}</div>}

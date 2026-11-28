@@ -85,7 +85,7 @@ export default function Reports() {
                 <PieChart><Pie data={r.chart.data} dataKey={r.chart.series[0].key} nameKey={r.chart.xKey} outerRadius={110}>{r.chart.data.map((_, i) => <Cell key={i} fill={COLORS[i % 4]} />)}</Pie><Tooltip /><Legend /></PieChart>
               ) : (
                 <BarChart data={r.chart.data} margin={{ bottom: 30 }}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey={r.chart.xKey} tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={60} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Legend verticalAlign="top" />
-                  {r.chart.series.map((s, i) => <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i % 4]} radius={[4, 4, 0, 0]} />)}</BarChart>
+                  {r.chart.series.map((s, i) => <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i % 4]} radius={[8, 8, 0, 0]} />)}</BarChart>
               )}
             </ResponsiveContainer></div>
           </Section>

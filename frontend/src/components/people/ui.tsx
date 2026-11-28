@@ -7,7 +7,7 @@ export const initials = (name: string) => name.split(' ').filter(Boolean).slice(
 
 export function Avatar({ name, color = '#1AACB8', size = 36 }: { name: string; color?: string; size?: number }) {
   return (
-    <span className="inline-flex items-center justify-center rounded-full font-bold shrink-0" style={{ width: size, height: size, background: `${color}1F`, color, fontSize: size * 0.36 }} aria-hidden>
+    <span className="inline-flex items-center justify-center rounded-full font-bold shrink-0" style={{ width: size, height: size, background: `linear-gradient(135deg, ${color}2E, ${color}14)`, color, fontSize: size * 0.36, boxShadow: `inset 0 0 0 1.5px ${color}33` }} aria-hidden>
       {initials(name)}
     </span>
   );
@@ -16,10 +16,10 @@ export function Avatar({ name, color = '#1AACB8', size = 36 }: { name: string; c
 export function ProgressBar({ value, color = '#1AACB8' }: { value: number; color?: string }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-full rounded-full" style={{ width: `${Math.min(100, value)}%`, background: color }} />
+      <div className="progress-track flex-1 h-2" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
+        <div className="progress-fill" style={{ width: `${Math.min(100, value)}%`, background: `linear-gradient(90deg, ${color}CC, ${color})` }} />
       </div>
-      <span className="text-xs font-semibold text-slate-600 w-9 text-right">{value}%</span>
+      <span className="text-xs font-bold text-slate-600 w-9 text-right tabular-nums">{value}%</span>
     </div>
   );
 }
@@ -97,8 +97,8 @@ export function ReportGrid({ reports, accent }: { reports: ReportDef[]; accent: 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {reports.map(r => (
-        <div key={r.title} className="card card-body flex flex-col gap-3">
-          <div className="p-2.5 rounded-xl w-fit" style={{ background: `${accent}1A`, color: accent }}>{r.icon}</div>
+        <div key={r.title} className="card card-interactive card-body flex flex-col gap-3">
+          <div className="p-3 rounded-2xl w-fit" style={{ background: `linear-gradient(135deg, ${accent}26, ${accent}0F)`, color: accent, boxShadow: `inset 0 0 0 1px ${accent}22` }}>{r.icon}</div>
           <div className="flex-1">
             <div className="font-bold text-slate-800" style={{ fontFamily: 'Nunito, sans-serif' }}>{r.title}</div>
             <p className="text-xs text-slate-500 mt-1">{r.description}</p>

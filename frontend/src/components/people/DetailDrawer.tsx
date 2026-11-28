@@ -21,9 +21,9 @@ export default function DetailDrawer({ open, onClose, title, subtitle, children,
       <div className={`people-window-backdrop absolute inset-0 bg-slate-900/40 ${shown ? 'is-visible' : ''}`} onClick={onClose} aria-hidden />
       <aside
         role="dialog" aria-modal="true" aria-label={title}
-        className={`people-window-panel relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl ${shown ? 'is-visible' : ''}`}
+        className={`people-window-panel relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[22px] bg-white shadow-2xl ${shown ? 'is-visible' : ''}`}
       >
-        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-slate-100" style={{ borderTop: `3px solid ${accent}` }}>
+        <div className="flex items-start justify-between gap-3 px-6 py-4 border-b border-slate-100" style={{ borderTop: `4px solid ${accent}`, backgroundImage: `linear-gradient(180deg, ${accent}12, transparent)` }}>
           <div className="min-w-0">
             <h2 className="text-lg font-extrabold text-slate-800 truncate" style={{ fontFamily: 'Nunito, sans-serif' }}>{title}</h2>
             {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}

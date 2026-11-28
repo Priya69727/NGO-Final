@@ -150,9 +150,9 @@ export default function OutcomesPage() {
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                  <Line type="monotone" dataKey="contributions" stroke="#1AACB8" strokeWidth={2.5} dot={{ r: 3 }} name="Contributions" />
-                  <Line type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3 }} name="Conversions" />
-                  <Line type="monotone" dataKey="pledges" stroke="#F59E0B" strokeWidth={2.5} dot={{ r: 3 }} name="Pledges" />
+                  <Line type="monotone" dataKey="contributions" stroke="#1AACB8" strokeWidth={3} dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Contributions" />
+                  <Line type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={3} dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Conversions" />
+                  <Line type="monotone" dataKey="pledges" stroke="#F59E0B" strokeWidth={3} dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 6 }} name="Pledges" />
                 </LineChart>
               </ResponsiveContainer>
               <div className="flex gap-6 justify-center mt-2">

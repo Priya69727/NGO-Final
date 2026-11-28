@@ -1,4 +1,4 @@
-export const Skeleton = ({ className = '' }: { className?: string }) => <div className={`animate-pulse rounded-lg bg-slate-200/70 ${className}`} aria-hidden="true" />;
+export const Skeleton = ({ className = '' }: { className?: string }) => <div className={`skeleton-shimmer rounded-lg ${className}`} aria-hidden="true" />;
 
 export const SkeletonCards = ({ n = 4 }: { n?: number }) => (
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" role="status" aria-label="Loading">
